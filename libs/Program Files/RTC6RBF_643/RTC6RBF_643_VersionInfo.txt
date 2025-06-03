@@ -1,0 +1,45 @@
+SCANLAB version information for the RTC6 firmware
+-------------------------------------------------
+SCANLAB Versionsinfo zur RTC6 Firmware
+
+***************************************************************************
+
+The RBF file RTC6RBF.rbf of version 643 can only be combined with the 
+following program files:
+
+ - RTC6DLL.dll (DLL)                            at least version 647
+ - RTC6OUT.out (DSP program file for RTC6e)     at least version 650
+ - RTC6ETH.out (DSP program file for RTC6eth)   at least version 650
+ - RTC6DAT.dat (binary support file)            at least version 603
+
+Further instructions for using the RTC6 firmware are given in the RTC6
+manual.
+
+----------------------------------------------------------------------
+
+Die RBF-Datei RTC6RBF.rbf der Version 643 kann nur mit den
+folgenden Programmdateien kombiniert werden:
+
+ - RTC6DLL.dll (DLL)                            mindestens Version 647
+ - RTC6OUT.out (DSP-Programmdatei für RTC6e)    mindestens Version 650
+ - RTC6ETH.out (DSP-Programmdatei für RTC6eth)  mindestens Version 650
+ - RTC6DAT.dat (binäre Hilfsdatei)              mindestens Version 603
+
+Weitere Informationen zur RTC6 Firmware finden Sie im RTC6-Handbuch.
+
+***************************************************************************
+
+Manufacturer / Hersteller
+
+   SCANLAB GmbH
+   Siemensstr. 2a 
+   82178 Puchheim
+   Germany
+
+   Tel. + 49 (89) 800 746-0
+   Fax: + 49 (89) 800 746-199
+
+   info@scanlab.de
+   www.scanlab.de
+
+***************************************************************************
