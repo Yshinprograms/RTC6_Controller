@@ -73,3 +73,7 @@ ScaffoldingReadMe.txt
 *.suo
 *.sln.docstates
 .vs/
+libs/gmock/gmock.lib
+libs/gmock/gmock_main.lib
+libs/gmock/gtest.lib
+libs/gmock/gtest_main.lib

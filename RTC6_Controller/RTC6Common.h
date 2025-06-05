@@ -1,151 +1,87 @@
+// Rtc6Common.h
 #ifndef RTC6_COMMON_H
 #define RTC6_COMMON_H
 
-#include <stdexcept>
-#include <string>
-#include <cstdint>
-#include <limits>
-#include <vector>
+#include <stdexcept> // For std::runtime_error
+#include <string>    // For std::string
+#include <cstdint>   // For uint32_t, int32_t
 
-// Common type definitions
-typedef unsigned int UINT;
-typedef int16_t RTC6_Word;
-typedef uint32_t RTC6_DWord;
-typedef double RTC6_Double;
+// --- Common Type Aliases for RTC6 API Interaction ---
+// Using fixed-width integer types for clarity and portability
+typedef uint32_t UINT;  // Matches RTC6impl.h's UINT
+typedef int32_t LONG;   // Matches RTC6impl.h's LONG
 
-// Forward declarations for commonly used classes
+// --- Forward Declarations of Interfaces (for cross-cutting dependencies) ---
+// These are used to avoid circular includes and to make interfaces visible.
 class IRTCAPIDriver;
 class IListCommandBuilder;
 class ILaserControl;
 class IMicroVectorProcessor;
 
-/**
- * @brief Laser control mode enumeration
- */
-enum class LaserControlMode {
-    PWM,            ///< Pulse-width modulation mode
-    Analog,         ///< Analog control mode
-    DirectPWM,      ///< Direct PWM mode
-    DirectAnalog    ///< Direct analog mode
+// --- Custom Exception for RTC6 Operations ---
+// Provides detailed error messages including the raw RTC6 error code.
+class Rtc6Exception : public std::runtime_error {
+public:
+    explicit Rtc6Exception(const std::string& message, UINT errorCode = 0)
+        : std::runtime_error(message), errorCode_(errorCode) {}
+
+    UINT getErrorCode() const { return errorCode_; }
+
+private:
+    UINT errorCode_;
 };
 
-/**
- * @brief RTC6 list execution mode
- */
+// --- Enumerations for Control Modes ---
+enum class LaserControlMode {
+    PWM,        ///< Pulse-width modulation mode
+    Analog,     ///< Analog control mode
+    QSwitch,    ///< Q-switch mode (YAG)
+    FreeRunning ///< Free-running laser mode
+};
+
 enum class ListExecutionMode {
     SingleShot,     ///< Execute list once
     Continuous,     ///< Execute list continuously
     SingleStep,     ///< Execute single step of the list
-    SingleStepCont  ///< Execute single step continuously
+    SingleStepCont  ///< Execute single step continuously (typically for debugging)
 };
 
-/**
- * @brief 3D point in RTC6 coordinate system (bits)
- */
+// --- Basic 3D Point Structure (in RTC6 "bits" coordinates) ---
+// RTC6 coordinates are signed 20-bit integers, typically represented by LONG.
+// Z-axis values (defocus) are typically signed 16-bit integers.
 struct Point {
-    int X;  ///< X coordinate in bits
-    int Y;  ///< Y coordinate in bits
-    int Z;  ///< Z coordinate in bits (defocus/height)
+    LONG X; ///< X coordinate in RTC6 bits
+    LONG Y; ///< Y coordinate in RTC6 bits
+    LONG Z; ///< Z coordinate (defocus) in RTC6 bits
 
-    /// Default constructor initializes all coordinates to 0
-    Point(int x = 0, int y = 0, int z = 0) : X(x), Y(y), Z(z) {}
+    // Constructor with default values for convenience
+    Point(LONG x = 0, LONG y = 0, LONG z = 0) : X(x), Y(y), Z(z) {}
 };
 
-// Forward declarations for commonly used classes
-class IRTCAPIDriver;
-class IListCommandBuilder;
-class ILaserControl;
-
-/**
- * @brief Exception class for RTC6 operations
- */
-class Rtc6Exception : public std::runtime_error {
-public:
-    /**
-     * @brief Construct a new Rtc6Exception object
-     * @param message Error message
-     * @param errorCode Optional error code (default: 0)
-     */
-    explicit Rtc6Exception(const std::string& message, UINT errorCode = 0)
-        : std::runtime_error(message), errorCode_(errorCode) {}
-
-    /**
-     * @brief Get the error code associated with this exception
-     * @return UINT The error code
-     */
-    UINT getErrorCode() const { return errorCode_; }
-
-private:
-    UINT errorCode_;  ///< Numeric error code for programmatic error handling
-};
-
-/**
- * @brief Common constants and types for RTC6 operations
- */
+// --- Common Constants and Helper Functions for RTC6 Domain ---
 namespace RTC6 {
-    // System constants
-    constexpr UINT MAX_CORRECTION_POINTS = 64;    ///< Maximum number of correction points
-    constexpr UINT MAX_LASER_POWER = 1000;        ///< Maximum laser power in Watts
-    constexpr UINT MIN_LASER_POWER = 0;           ///< Minimum laser power in Watts
-    
-    // RTC6-specific constants
-    constexpr int COORDINATE_BITS = 20;           ///< Bits used for coordinate representation
-    constexpr int MAX_COORDINATE = (1 << (COORDINATE_BITS - 1)) - 1;  ///< Max coordinate value
-    constexpr int MIN_COORDINATE = -(1 << (COORDINATE_BITS - 1));     ///< Min coordinate value
-    constexpr int MAX_Z_AXIS = 32767;             ///< Maximum Z-axis position
-    constexpr int MIN_Z_AXIS = -32768;            ///< Minimum Z-axis position
-    
-    // Time constants (in microseconds)
-    constexpr double CLOCK_CYCLE = 0.01;          ///< RTC6 clock cycle in microseconds (10ns)
-    constexpr double MIN_TIME_TICK = 0.00000001;  ///< Minimum time tick (10ns)
-    constexpr double MAX_TIME_TICK = 0.1;         ///< Maximum time tick (100ms)
-    
-    // Default values
-    constexpr double DEFAULT_MARK_SPEED = 1000.0;  ///< Default marking speed in mm/s
-    constexpr double DEFAULT_JUMP_SPEED = 5000.0;  ///< Default jump speed in mm/s
-    constexpr double DEFAULT_LASER_POWER = 50.0;   ///< Default laser power in Watts
-    constexpr double DEFAULT_PULSE_FREQ = 1000.0;  ///< Default pulse frequency in Hz
-    constexpr int DEFAULT_Z_AXIS_HEIGHT = 0;       ///< Default Z-axis height
-    
-    // List buffer constants
-    constexpr size_t DEFAULT_LIST_BUFFER_SIZE = 0x100000;  ///< Default list buffer size (1MB)
-    constexpr size_t MIN_LIST_BUFFER_SIZE = 0x1000;       ///< Minimum list buffer size (4KB)
-    constexpr size_t MAX_LIST_BUFFER_SIZE = 0x1000000;    ///< Maximum list buffer size (16MB)
-    
-    // Error codes
-    enum ErrorCode {
-        NO_ERROR = 0,
-        NOT_INITIALIZED,
-        ALREADY_INITIALIZED,
-        INVALID_PARAMETER,
-        LIST_BUFFER_OVERFLOW,
-        HARDWARE_ERROR,
-        FILE_IO_ERROR,
-        TIMEOUT,
-        NOT_SUPPORTED,
-        UNKNOWN_ERROR = 0xFFFFFFFF
-    };
-    
-    // Helper functions
-    /**
-     * @brief Convert bits to millimeters using the current correction table
-     * @param bits Value in bits
-     * @param dpi Dots per inch of the correction table
-     * @return double Value in millimeters
-     */
-    inline double bitsToMillimeters(double bits, double dpi = 1000.0) {
-        return (bits * 25.4) / dpi;
+    // Basic RTC6 system constants
+    constexpr double CLOCK_CYCLE_MICROSECONDS = 10.0; // Fundamental RTC6 DSP clock cycle: 10 microseconds
+
+    // Common scaling factor (example: 10000 bits per millimeter if your system is calibrated this way)
+    // You will need to determine the actual calibration factor of your system (e.g., from correction file)
+    // For now, this is a placeholder. A real application would read this from the board.
+    constexpr double DEFAULT_BITS_PER_MM = 10000.0; // Example: 10,000 bits per mm
+
+    // Helper functions for coordinate conversion (using default scaling for now)
+    inline double BitsToMillimeters(LONG bits, double bitsPerMM = DEFAULT_BITS_PER_MM) {
+        return static_cast<double>(bits) / bitsPerMM;
     }
-    
-    /**
-     * @brief Convert millimeters to bits using the current correction table
-     * @param mm Value in millimeters
-     * @param dpi Dots per inch of the correction table
-     * @return int Value in bits
-     */
-    inline int millimetersToBits(double mm, double dpi = 1000.0) {
-        return static_cast<int>((mm * dpi) / 25.4 + 0.5);
+
+    inline LONG MillimetersToBits(double mm, double bitsPerMM = DEFAULT_BITS_PER_MM) {
+        return static_cast<LONG>(mm * bitsPerMM + 0.5); // +0.5 for rounding to nearest integer
     }
+
+    // Default RTC6 parameter values (for control commands, for example)
+    constexpr double DEFAULT_MARK_SPEED_BITS_MS = 50.0;   // In bits/ms
+    constexpr double DEFAULT_JUMP_SPEED_BITS_MS = 500.0;  // In bits/ms
+    constexpr UINT   DEFAULT_LASER_POWER_VALUE = 32767;   // Example 16-bit DAC range (0-65535, half power)
+    constexpr int    DEFAULT_Z_AXIS_HEIGHT_BITS = 0;      // In bits
 }
 
 #endif // RTC6_COMMON_H

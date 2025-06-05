@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36109.1 d17.14
+VisualStudioVersion = 17.14.36109.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RTC6_Controller", "RTC6_Controller\RTC6_Controller.vcxproj", "{F4B5DAB6-9B5D-4947-A41F-2458C1F06F55}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RTC6_Tests", "RTC6_Tests\RTC6_Tests.vcxproj", "{5DD07B7B-73F0-4A16-BF5F-1BC3A744CCDC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sample_GoogleTest_YoutubeTutorial", "Sample_GoogleTest_YoutubeTutorial\Sample_GoogleTest_YoutubeTutorial.vcxproj", "{19DFF96C-6616-41B7-9E90-CDE4C3D823CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,22 @@ Global
 		{F4B5DAB6-9B5D-4947-A41F-2458C1F06F55}.Release|x64.Build.0 = Release|x64
 		{F4B5DAB6-9B5D-4947-A41F-2458C1F06F55}.Release|x86.ActiveCfg = Release|Win32
 		{F4B5DAB6-9B5D-4947-A41F-2458C1F06F55}.Release|x86.Build.0 = Release|Win32
+		{5DD07B7B-73F0-4A16-BF5F-1BC3A744CCDC}.Debug|x64.ActiveCfg = Debug|x64
+		{5DD07B7B-73F0-4A16-BF5F-1BC3A744CCDC}.Debug|x64.Build.0 = Debug|x64
+		{5DD07B7B-73F0-4A16-BF5F-1BC3A744CCDC}.Debug|x86.ActiveCfg = Debug|Win32
+		{5DD07B7B-73F0-4A16-BF5F-1BC3A744CCDC}.Debug|x86.Build.0 = Debug|Win32
+		{5DD07B7B-73F0-4A16-BF5F-1BC3A744CCDC}.Release|x64.ActiveCfg = Release|x64
+		{5DD07B7B-73F0-4A16-BF5F-1BC3A744CCDC}.Release|x64.Build.0 = Release|x64
+		{5DD07B7B-73F0-4A16-BF5F-1BC3A744CCDC}.Release|x86.ActiveCfg = Release|Win32
+		{5DD07B7B-73F0-4A16-BF5F-1BC3A744CCDC}.Release|x86.Build.0 = Release|Win32
+		{19DFF96C-6616-41B7-9E90-CDE4C3D823CD}.Debug|x64.ActiveCfg = Debug|x64
+		{19DFF96C-6616-41B7-9E90-CDE4C3D823CD}.Debug|x64.Build.0 = Debug|x64
+		{19DFF96C-6616-41B7-9E90-CDE4C3D823CD}.Debug|x86.ActiveCfg = Debug|Win32
+		{19DFF96C-6616-41B7-9E90-CDE4C3D823CD}.Debug|x86.Build.0 = Debug|Win32
+		{19DFF96C-6616-41B7-9E90-CDE4C3D823CD}.Release|x64.ActiveCfg = Release|x64
+		{19DFF96C-6616-41B7-9E90-CDE4C3D823CD}.Release|x64.Build.0 = Release|x64
+		{19DFF96C-6616-41B7-9E90-CDE4C3D823CD}.Release|x86.ActiveCfg = Release|Win32
+		{19DFF96C-6616-41B7-9E90-CDE4C3D823CD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -18,6 +18,26 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ILaserControl.h" />
+    <ClInclude Include="IListCommandBuilder.h" />
+    <ClInclude Include="IMicroVectorProcessor.h" />
+    <ClInclude Include="IRTCAPIDriver.h" />
+    <ClInclude Include="LaserControl.h" />
+    <ClInclude Include="ListCommandBuilder.h" />
+    <ClInclude Include="MicroVectorProcessor.h" />
+    <ClInclude Include="RTC6Common.h" />
+    <ClInclude Include="RTC6Controller.h" />
+    <ClInclude Include="RTCAPIDriver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="LaserControl.cpp" />
+    <ClCompile Include="ListCommandBuilder.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MicroVectorProcessor.cpp" />
+    <ClCompile Include="RTC6Controller.cpp" />
+    <ClCompile Include="RTCAPIDriver.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -135,17 +155,6 @@ xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\libs\RTC6D
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="RTC6APIDriver.cpp" />
-    <ClCompile Include="RTC6Controller.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="IRTC6Driver.h" />
-    <ClInclude Include="RTC6APIDriver.h" />
-    <ClInclude Include="RTC6Common.h" />
-    <ClInclude Include="RTC6Controller.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
