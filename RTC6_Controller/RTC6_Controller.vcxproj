@@ -18,30 +18,10 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ILaserControl.h" />
-    <ClInclude Include="IListCommandBuilder.h" />
-    <ClInclude Include="IMicroVectorProcessor.h" />
-    <ClInclude Include="IRTCAPIDriver.h" />
-    <ClInclude Include="LaserControl.h" />
-    <ClInclude Include="ListCommandBuilder.h" />
-    <ClInclude Include="MicroVectorProcessor.h" />
-    <ClInclude Include="RTC6Common.h" />
-    <ClInclude Include="RTC6Controller.h" />
-    <ClInclude Include="RTCAPIDriver.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="LaserControl.cpp" />
-    <ClCompile Include="ListCommandBuilder.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="MicroVectorProcessor.cpp" />
-    <ClCompile Include="RTC6Controller.cpp" />
-    <ClCompile Include="RTCAPIDriver.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{f4b5dab6-9b5d-4947-a41f-2458c1f06f55}</ProjectGuid>
+    <ProjectGuid>{92b2bb74-3351-4550-81bb-804054c4b06c}</ProjectGuid>
     <RootNamespace>RTC6Controller</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -90,10 +70,6 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>$(LibraryPath)</LibraryPath>
-    <IncludePath>$(IncludePath)</IncludePath>
-  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -126,19 +102,20 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\libs\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\libs\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\libs\RTC6DLLx64.dll" "$(OutDir)"
-xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\libs\RTC6OUT.out" "$(OutDir)"
-xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\libs\RTC6RBF.rbf" "$(OutDir)"
-xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\libs\RTC6DAT.dat" "$(OutDir)"</Command>
+      <Command>xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6DLLx64.dll" "$(OutDir)"
+xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6OUT.out" "$(OutDir)"
+xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6RBF.rbf" "$(OutDir)"
+xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6DAT.dat" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -155,6 +132,9 @@ xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\libs\RTC6D
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
