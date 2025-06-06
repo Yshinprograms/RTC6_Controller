@@ -22,7 +22,7 @@ Rtc6Communicator::Rtc6Communicator(UINT boardId)
 Rtc6Communicator::~Rtc6Communicator() {
     if (m_isDllInitialized) {
         std::cout << "[Rtc6Communicator] Releasing RTC6 DLL resources..." << std::endl;
-        free_rtc6_dll(); // Essential cleanup
+        free_rtc6_dll();
     }
     std::cout << "[Rtc6Communicator] Instance destroyed." << std::endl;
 }
@@ -150,9 +150,6 @@ bool Rtc6Communicator::loadFirmware() {
 }
 
 // --- Public Methods Implementation ---
-
-// This is the older method, now more of an internal part of the setup sequence for initializeAndShowBoardDetails
-// It's kept public in case direct setup without immediate printing is ever needed.
 bool Rtc6Communicator::connectAndSetupBoard() {
     m_successfullySetup = false; // Reset status for a fresh attempt
 
@@ -162,25 +159,20 @@ bool Rtc6Communicator::connectAndSetupBoard() {
 
     UINT cardCount = countCards();
     if (cardCount == 0) {
-        // No specific error code to check from rtc6_count_cards returning 0,
-        // the absence of cards is the issue.
         return false;
     }
-    // Simple logic: if multiple cards, m_boardId determines which to target.
-    // More complex logic could involve iterating or prompting user if cardCount > 1 and m_boardId isn't specific enough.
     if (m_boardId > cardCount && cardCount > 0) {
         std::cerr << "WARNING: [Rtc6Communicator] Requested board ID " << m_boardId
             << " is greater than detected card count " << cardCount
-            << ". Attempting to select board 1 instead." << std::endl;
-        m_boardId = 1; // Fallback or error, depending on desired strictness
+            << ". Defaulting to board 1, please check connections. " << std::endl;
+        m_boardId = 1;
     }
 
-
-    if (!selectBoard()) { // selectBoard uses m_boardId internally
+    if (!selectBoard()) {
         return false;
     }
 
-    if (!loadFirmware()) { // loadFirmware uses m_selectedCardNo (set by selectBoard)
+    if (!loadFirmware()) {
         return false;
     }
 
@@ -189,25 +181,21 @@ bool Rtc6Communicator::connectAndSetupBoard() {
     return true;
 }
 
-// --- NEW Primary Setup Method Implementation ---
 bool Rtc6Communicator::initializeAndShowBoardInfo() {
     std::cout << "\n[Rtc6Communicator] Initiating full board initialization and diagnostics..." << std::endl;
 
-    if (connectAndSetupBoard()) { // Perform the core connection and firmware load
+    if (connectAndSetupBoard()) {
         std::cout << "\n[Rtc6Communicator] Core setup complete. Retrieving board diagnostics..." << std::endl;
 
-        // If core setup was successful, print the details
         printBoardVersions();
         printBoardSerialNumber();
-        checkGlobalErrorStatus(); // This method prints status or warnings
+        checkGlobalErrorStatus();
 
-        // m_successfullySetup is true at this point from connectAndSetupBoard()
         std::cout << "\n[Rtc6Communicator] Board initialization and diagnostics complete." << std::endl;
         return true;
     }
     else {
         std::cerr << "\n[Rtc6Communicator] Core board setup failed. Cannot proceed with diagnostics." << std::endl;
-        // m_successfullySetup is false
         return false;
     }
 }
@@ -284,12 +272,6 @@ void Rtc6Communicator::checkGlobalErrorStatus() const {
         if (accumulatedError & 0x00000010) std::cerr << "    - Bit 4 (TEMP_OVER): Temperature too high." << std::endl;
         if (accumulatedError & 0x00000020) std::cerr << "    - Bit 5 (SPI_ERROR): Memory access error (SPI)." << std::endl;
         // ... and so on for other bits as per the manual.
-
-        // Optionally, attempt to reset *resettable* errors.
-        // Consult the manual for which errors are resettable via reset_error().
-        // For example, to reset all resettable errors shown in get_error():
-        // reset_error(accumulatedError); 
-        // std::cout << "  Attempted to reset active error flags." << std::endl;
     }
     else {
         std::cout << "  No accumulated errors or significant status flags active." << std::endl;

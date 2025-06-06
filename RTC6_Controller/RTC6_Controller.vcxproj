@@ -140,11 +140,13 @@ xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Contr
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DisplayUI.cpp" />
+    <ClCompile Include="ListHandler.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Rtc6Communicator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DisplayUI.h" />
+    <ClInclude Include="ListHandler.h" />
     <ClInclude Include="Rtc6Communicator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -24,12 +24,18 @@
     <ClCompile Include="DisplayUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ListHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Rtc6Communicator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DisplayUI.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ListHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
