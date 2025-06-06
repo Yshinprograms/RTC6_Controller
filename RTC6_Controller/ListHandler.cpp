@@ -1,28 +1,32 @@
 #include "ListHandler.h"
-#include "Rtc6Constants.h" // Include the new constants file
+#include "Rtc6Constants.h"
 #include <iostream>
+#include <cmath> // For std::round
 
 ListHandler::ListHandler(Rtc6Communicator& communicator)
     : m_communicator(communicator),
     m_currentListIdForFilling(1),
-    m_currentListIdForExecution(0), // No list is executing initially
-    m_autoChangeEnabled(false),
-    m_firstListExecuted(false) {
+    m_currentListIdForExecution(0) {
     std::cout << "[ListHandler] Instance created. Default fill target: List 1." << std::endl;
 }
+
+// --- Workflow Management ---
 
 bool ListHandler::setupAutoChangeMode() {
     if (!m_communicator.isSuccessfullySetup()) {
         std::cerr << "ERROR: [ListHandler] Cannot setup auto-change, Rtc6Communicator not ready." << std::endl;
         return false;
     }
-    // Note: auto_change() is a one-time trigger for the *next* end-of-list event.
-    // It does not set a permanent "mode" on the board; our class state handles the logic.
-    std::cout << "[ListHandler] Setting up auto-change mode." << std::endl;
-    auto_change();
-    m_autoChangeEnabled = true;
-    m_currentListIdForFilling = 1;
+    std::cout << "[ListHandler] Arming initial auto-change." << std::endl;
+    auto_change(); // This is a one-time trigger for the next set_end_of_list
     return true;
+}
+
+void ListHandler::reArmAutoChange() {
+    if (m_communicator.isSuccessfullySetup()) {
+        std::cout << "[ListHandler] Re-arming auto-change for the next list transition." << std::endl;
+        auto_change();
+    }
 }
 
 bool ListHandler::beginListPreparation() {
@@ -33,32 +37,6 @@ bool ListHandler::beginListPreparation() {
     std::cout << "[ListHandler] Beginning preparation for List " << m_currentListIdForFilling << std::endl;
     set_start_list(m_currentListIdForFilling);
     return true;
-}
-
-void ListHandler::addLaserSignalOn() {
-    laser_signal_on_list();
-}
-
-void ListHandler::addLaserSignalOff() {
-    laser_signal_off_list();
-}
-
-void ListHandler::addSetLaserPower(UINT port, UINT power) {
-    set_laser_power(port, power);
-}
-
-void ListHandler::addSetZPosition(INT zPos) {
-    // Correct API call for setting Z-focus shift in a list.
-    set_defocus_list(zPos);
-}
-
-void ListHandler::addJumpAbsolute(INT x, INT y) {
-    jump_abs(x, y);
-}
-
-void ListHandler::addMicroVectorAbs(INT x_target, INT y_target, INT lasOnDelay, INT lasOffDelay) {
-    // Correct API call with laser on/off delays.
-    micro_vector_abs(x_target, y_target, lasOnDelay, lasOffDelay);
 }
 
 void ListHandler::endListPreparation() {
@@ -77,12 +55,12 @@ bool ListHandler::executeCurrentListAndCycle() {
     execute_list(listToExecute);
 
     m_currentListIdForExecution = listToExecute;
-
-    // Switch the target for the *next* fill operation.
     switchFillListTarget();
 
     return true;
 }
+
+// --- Status & State ---
 
 bool ListHandler::isListBusy(UINT listIdToCheck) const {
     if (!m_communicator.isSuccessfullySetup()) {
@@ -94,15 +72,13 @@ bool ListHandler::isListBusy(UINT listIdToCheck) const {
         return true;
     }
 
-    // Use read_status() to check the BUSY flag for a *specific* list (BUSY1/BUSY2).
-    // This is more accurate than the global get_status() for ping-pong buffering.
     UINT status_word = read_status();
 
     if (listIdToCheck == 1) {
-        return (status_word & Rtc6Constants::Status::BUSY1); // Check BUSY1 flag (Bit 4)
+        return (status_word & Rtc6Constants::Status::BUSY1);
     }
     else { // listIdToCheck == 2
-        return (status_word & Rtc6Constants::Status::BUSY2); // Check BUSY2 flag (Bit 5)
+        return (status_word & Rtc6Constants::Status::BUSY2);
     }
 }
 
@@ -110,7 +86,42 @@ UINT ListHandler::getCurrentFillListId() const {
     return m_currentListIdForFilling;
 }
 
+// --- List Command Abstractions ---
+
+void ListHandler::addJumpAbsolute(INT x, INT y) {
+    jump_abs(x, y);
+}
+
+void ListHandler::addMarkAbsolute(INT x, INT y) {
+    mark_abs(x, y);
+}
+
+void ListHandler::addSetFocusOffset(INT offset_bits) {
+    set_defocus_list(offset_bits);
+}
+
+void ListHandler::addSetMarkSpeed(double speed_mm_s) {
+    // The API's set_mark_speed takes bits/ms.
+    // Conversion: (mm/s) * (bits/mm) / (1000 ms/s) = bits/ms
+    static constexpr double BITS_PER_MM = 1000.0; // Same as in GeometryHandler
+    double speed_bits_per_ms = speed_mm_s * BITS_PER_MM / 1000.0;
+
+    std::cout << "[ListHandler] Adding set_mark_speed: " << speed_bits_per_ms << " bits/ms (" << speed_mm_s << " mm/s)" << std::endl;
+    set_mark_speed(speed_bits_per_ms);
+}
+
+void ListHandler::addSetLaserPower(UINT port, UINT power) {
+    set_laser_power(port, power);
+}
+
+// --- Private Methods ---
+
 void ListHandler::switchFillListTarget() {
     m_currentListIdForFilling = (m_currentListIdForFilling == 1) ? 2 : 1;
     std::cout << "[ListHandler] Switched internal fill target. Next list to fill: List " << m_currentListIdForFilling << std::endl;
+}
+
+int ListHandler::mmToBits(double mm) const {
+    static constexpr double BITS_PER_MM = 1000.0; // Ensure this is consistent
+    return static_cast<int>(std::round(mm * BITS_PER_MM));
 }

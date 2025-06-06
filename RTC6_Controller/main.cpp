@@ -10,75 +10,62 @@
 #include "GeometryHandler.h"
 #include "Geometry.h"
 
-// This function now demonstrates the full ping-pong buffer workflow.
-void processTwoLayerSquare(Rtc6Communicator& rtcComm) {
-    if (!rtcComm.isSuccessfullySetup()) {
-        std::cerr << "Aborting geometry processing due to board setup failure." << std::endl;
+void processMultipleLayers(Rtc6Communicator& rtcComm, int numLayers) {
+    if (!rtcComm.isSuccessfullySetup() || numLayers < 1) {
+        std::cerr << "Aborting geometry processing: Board not ready or no layers to process." << std::endl;
         return;
     }
 
-    std::cout << "\n---------- Processing 2-Layer Square (Ping-Pong Buffer Demo) ----------" << std::endl;
+    std::cout << "\n---------- Processing " << numLayers << " Layers (Continuous Ping-Pong) ----------" << std::endl;
 
-    // --- 1. Setup ---
-    // Create the handlers, linking them together.
     ListHandler listHandler(rtcComm);
     GeometryHandler geoHandler(listHandler);
 
-    // Define the geometry for two separate layers.
-    std::vector<Point> layer1_square = {
-        {10.0, 10.0}, {20.0, 10.0}, {20.0, 20.0}, {10.0, 20.0}, {10.0, 10.0}
-    };
-    std::vector<Point> layer2_square = {
-        {11.0, 11.0}, {21.0, 11.0}, {21.0, 21.0}, {11.0, 21.0}, {11.0, 11.0}
-    };
-
-    // --- 2. Prepare and Execute Layer 1 ---
-    std::cout << "\n[MAIN] Preparing List 1 for Layer 1..." << std::endl;
+    // --- Step 1: Prepare and execute the VERY FIRST layer ---
+    UINT listToFill = listHandler.getCurrentFillListId();
+    std::cout << "\n[MAIN] Preparing initial List " << listToFill << " for Layer 1..." << std::endl;
     listHandler.beginListPreparation();
-    geoHandler.processPolyline(layer1_square, 50.0, 1000.0, 0.0);
+    std::vector<Point> geometryLayer1 = { {10, 10}, {20, 10}, {20, 20}, {10, 20}, {10, 10} };
+    geoHandler.processPolyline(geometryLayer1, 50.0, 1000.0, 0.0);
     listHandler.endListPreparation();
 
-    // Arm the hardware to automatically switch to the next list upon completion.
+    // Arm the first switch and execute.
     listHandler.setupAutoChangeMode();
+    listHandler.executeCurrentListAndCycle();
+    UINT lastListFilled = listToFill;
 
-    std::cout << "\n[MAIN] Executing List 1. The hardware is now busy." << std::endl;
-    listHandler.executeCurrentListAndCycle(); // Starts List 1, handler now targets List 2.
+    // --- Step 2: Main processing loop for subsequent layers ---
+    for (int i = 2; i <= numLayers; ++i) {
+        listToFill = lastListFilled;
+        UINT busyList = (listToFill == 1) ? 2 : 1;
 
-    // --- 3. Prepare Layer 2 CONCURRENTLY ---
-    // While the hardware is busy with List 1, we immediately prepare List 2.
-    std::cout << "\n[MAIN] Concurrently preparing List 2 for Layer 2..." << std::endl;
+        std::cout << "\n[MAIN] Hardware is processing Layer " << i - 1 << " on List " << busyList << "." << std::endl;
+        std::cout << "[MAIN] Concurrently preparing List " << listToFill << " for Layer " << i << "..." << std::endl;
 
-    // First, wait until List 2 is actually free (it should be instantly, but this is good practice).
-    while (listHandler.isListBusy(2)) {
-        std::cout << "  Waiting for List 2 to become available for filling..." << std::endl;
-        Sleep(10);
+        std::vector<Point> nextLayer = { {10.0 + i, 10.0 + i}, {20.0 + i, 10.0 + i}, {20.0 + i, 20.0 + i}, {10.0 + i, 20.0 + i}, {10.0 + i, 10.0 + i} };
+
+        listHandler.beginListPreparation();
+        geoHandler.processPolyline(nextLayer, 50.0 + i, 1200.0 + (i * 50), 0.0); // Varying speed and power
+        listHandler.endListPreparation();
+
+        listHandler.reArmAutoChange();
+
+        std::cout << "[MAIN] Waiting for List " << busyList << " to become free..." << std::endl;
+        while (listHandler.isListBusy(busyList)) {
+            Sleep(10);
+        }
+        std::cout << "[MAIN] List " << busyList << " is now free." << std::endl;
+
+        lastListFilled = listToFill;
     }
 
-    listHandler.beginListPreparation(); // This now targets List 2.
-    geoHandler.processPolyline(layer2_square, 55.0, 1200.0, 0.1); // Different params for layer 2
-    listHandler.endListPreparation();
-
-    std::cout << "[MAIN] List 2 is now loaded and ready. The hardware will switch to it automatically." << std::endl;
-
-    // --- 4. Wait for ALL processing to finish ---
-    // We need to wait for both List 1 and List 2 to complete.
-    std::cout << "\n[MAIN] Waiting for all hardware processing to complete..." << std::endl;
-
-    // Wait for List 1 to finish.
-    while (listHandler.isListBusy(1)) {
-        std::cout << "  Hardware is processing List 1..." << std::endl;
+    // --- Step 3: Wait for the final list to complete ---
+    std::cout << "\n[MAIN] All lists prepared. Waiting for final execution on List " << lastListFilled << "..." << std::endl;
+    while (listHandler.isListBusy(lastListFilled)) {
         Sleep(50);
     }
-    std::cout << "  List 1 finished. Hardware has auto-switched to List 2." << std::endl;
 
-    // Now, wait for List 2 to finish.
-    while (listHandler.isListBusy(2)) {
-        std::cout << "  Hardware is processing List 2..." << std::endl;
-        Sleep(50);
-    }
-    std::cout << "  List 2 finished." << std::endl;
-
-    std::cout << "\n---------- 2-Layer Square Finished ----------\n" << std::endl;
+    std::cout << "\n---------- All " << numLayers << " Layers Processed ----------\n" << std::endl;
 }
 
 int main() {
@@ -87,8 +74,7 @@ int main() {
 
     Rtc6Communicator rtcCommunicator(1);
     if (rtcCommunicator.initializeAndShowBoardInfo()) {
-        // If the board is ready, run the ping-pong buffer demo.
-        processTwoLayerSquare(rtcCommunicator);
+        processMultipleLayers(rtcCommunicator, 5);
     }
 
     ui.printGoodbyeMessage();
