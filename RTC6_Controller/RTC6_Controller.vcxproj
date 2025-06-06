@@ -148,6 +148,7 @@ xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Contr
     <ClInclude Include="DisplayUI.h" />
     <ClInclude Include="ListHandler.h" />
     <ClInclude Include="Rtc6Communicator.h" />
+    <ClInclude Include="Rtc6Constants.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
