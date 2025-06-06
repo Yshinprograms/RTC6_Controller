@@ -211,16 +211,16 @@ void Rtc6Communicator::checkGlobalErrorStatus() const {
 
     std::cout << "\n[Rtc6Communicator] Checking accumulated RTC6 errors for board context " << m_selectedCardNo << ":" << std::endl;
 
-    if (accumulatedError != Rtc6Constants::Error::None) {
+    if (accumulatedError != Rtc6Constants::Error::NONE) {
         std::cerr << "  WARNING: Accumulated RTC6 errors/status flags active!" << std::endl;
         std::cerr << "  Error Code Mask (32-bit): " << std::bitset<32>(accumulatedError) << std::endl;
 
-        if (accumulatedError & Rtc6Constants::Error::Timeout)         std::cerr << "    - Bit 3 (Timeout): No response from board. Check firmware load." << std::endl;
-        if (accumulatedError & Rtc6Constants::Error::Busy)            std::cerr << "    - Bit 5 (Busy): List processing is active." << std::endl;
-        if (accumulatedError & Rtc6Constants::Error::Rejected)        std::cerr << "    - Bit 6 (Rejected): List command rejected (e.g., invalid input pointer)." << std::endl;
-        if (accumulatedError & Rtc6Constants::Error::VersionMismatch) std::cerr << "    - Bit 8 (VersionMismatch): Incompatible DLL, RBF, or OUT versions." << std::endl;
-        if (accumulatedError & Rtc6Constants::Error::TypeRejected)    std::cerr << "    - Bit 10 (TypeRejected): Command sent to wrong board type." << std::endl;
-        if (accumulatedError & Rtc6Constants::Error::EthError)        std::cerr << "    - Bit 13 (EthError): General Ethernet error." << std::endl;
+        if (accumulatedError & Rtc6Constants::Error::TIMEOUT)         std::cerr << "    - Bit 3 (Timeout): No response from board. Check firmware load." << std::endl;
+        if (accumulatedError & Rtc6Constants::Error::BUSY)            std::cerr << "    - Bit 5 (Busy): List processing is active." << std::endl;
+        if (accumulatedError & Rtc6Constants::Error::REJECTED)        std::cerr << "    - Bit 6 (Rejected): List command rejected (e.g., invalid input pointer)." << std::endl;
+        if (accumulatedError & Rtc6Constants::Error::VERSION_MISMATCH) std::cerr << "    - Bit 8 (VersionMismatch): Incompatible DLL, RBF, or OUT versions." << std::endl;
+        if (accumulatedError & Rtc6Constants::Error::TYPE_REJECTED)    std::cerr << "    - Bit 10 (TypeRejected): Command sent to wrong board type." << std::endl;
+        if (accumulatedError & Rtc6Constants::Error::ETH_ERROR)        std::cerr << "    - Bit 13 (EthError): General Ethernet error." << std::endl;
     }
     else {
         std::cout << "  No accumulated errors or significant status flags active." << std::endl;

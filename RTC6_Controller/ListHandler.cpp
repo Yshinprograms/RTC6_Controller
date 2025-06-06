@@ -84,7 +84,6 @@ bool ListHandler::executeCurrentListAndCycle() {
     return true;
 }
 
-// CORRECTED: This implementation is now accurate according to the manual.
 bool ListHandler::isListBusy(UINT listIdToCheck) const {
     if (!m_communicator.isSuccessfullySetup()) {
         std::cerr << "WARNING: [ListHandler] Communicator not ready; assuming list is busy." << std::endl;
@@ -100,10 +99,10 @@ bool ListHandler::isListBusy(UINT listIdToCheck) const {
     UINT status_word = read_status();
 
     if (listIdToCheck == 1) {
-        return (status_word & Rtc6Constants::Status::Busy1); // Check BUSY1 flag (Bit 4)
+        return (status_word & Rtc6Constants::Status::BUSY1); // Check BUSY1 flag (Bit 4)
     }
     else { // listIdToCheck == 2
-        return (status_word & Rtc6Constants::Status::Busy2); // Check BUSY2 flag (Bit 5)
+        return (status_word & Rtc6Constants::Status::BUSY2); // Check BUSY2 flag (Bit 5)
     }
 }
 
