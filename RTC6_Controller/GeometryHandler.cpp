@@ -15,7 +15,7 @@ void GeometryHandler::processPolyline(
     double markSpeed_mm_s,
     double focusOffset_mm) {
 
-    // Guard clause: A polyline needs at least a start and an end point.
+    // A polyline needs at least a start and an end point.
     if (polyline.size() < 2) {
         std::cerr << "WARNING: [GeometryHandler] Cannot process polyline with fewer than 2 points." << std::endl;
         return;
@@ -25,8 +25,6 @@ void GeometryHandler::processPolyline(
         << " points using mark_abs at " << markSpeed_mm_s << " mm/s." << std::endl;
 
     // --- Step 1: Set parameters that apply to the entire polyline ---
-    // These commands are modal; they affect all subsequent relevant commands
-    // until they are changed again. They must be set before the geometry.
     m_listHandler.addSetMarkSpeed(markSpeed_mm_s);
     m_listHandler.addSetLaserPower(1, powerToDAC(laserPowerPercent)); // Port 1 is typical for laser power.
     m_listHandler.addSetFocusOffset(mmToBits(focusOffset_mm));
@@ -36,9 +34,6 @@ void GeometryHandler::processPolyline(
     m_listHandler.addJumpAbsolute(mmToBits(startPoint.x), mmToBits(startPoint.y));
 
     // --- Step 3: Trace all segments of the polyline (laser on) ---
-    // The RTC6 automatically handles turning the laser on for the first mark_abs
-    // and keeping it on for the subsequent, consecutive mark_abs calls. It will
-    // insert the correct 'Polygon Delay' at each corner.
     for (size_t i = 1; i < polyline.size(); ++i) {
         const auto& p = polyline[i];
         m_listHandler.addMarkAbsolute(mmToBits(p.x), mmToBits(p.y));

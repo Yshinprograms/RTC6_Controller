@@ -1,9 +1,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <Windows.h> // For Sleep()
+#include <Windows.h>
 
-// Include all our project headers
 #include "Rtc6Communicator.h"
 #include "DisplayUI.h"
 #include "ListHandler.h"
