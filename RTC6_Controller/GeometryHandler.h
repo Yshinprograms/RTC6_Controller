@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ListHandler.h"
+#include "InterfaceListHandler.h"
 #include "Geometry.h"
 #include <vector>
 
@@ -17,7 +17,7 @@ class GeometryHandler {
 public:
     // Constructor: Requires a reference to a ListHandler to send commands to.
     // This dependency is injected, making the class more modular and testable.
-    GeometryHandler(ListHandler& listHandler);
+    GeometryHandler(InterfaceListHandler& listHandler);
 
     // Processes a vector of points as a continuous polyline.
     // This method sets the necessary process parameters (speed, power, focus)
@@ -34,7 +34,7 @@ public:
     // void processHatchFill(const std::vector<Point>& boundary, ...);
 
 private:
-    ListHandler& m_listHandler; // A reference to the object that builds the command list.
+    InterfaceListHandler& m_listHandler; // A reference to the object that builds the command list.
 
     // --- Unit Conversion Helpers ---
     // These are kept private as they are implementation details.

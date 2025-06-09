@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cmath> // For std::round
 
-ListHandler::ListHandler(Rtc6Communicator& communicator)
+ListHandler::ListHandler(InterfaceCommunicator& communicator)
     : m_communicator(communicator),
     m_currentListIdForFilling(1),
     m_currentListIdForExecution(0) {

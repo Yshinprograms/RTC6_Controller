@@ -3,8 +3,9 @@
 
 #include <string>
 #include "RTC6impl.h"
+#include "InterfaceCommunicator.h"
 
-class Rtc6Communicator {
+class Rtc6Communicator : public InterfaceCommunicator {
 public:
     Rtc6Communicator(UINT boardId = 1); // Default to board 1
     ~Rtc6Communicator();
@@ -13,7 +14,7 @@ public:
     void printBoardVersions() const;
     void printBoardSerialNumber() const;
     void checkGlobalErrorStatus() const;
-    bool isSuccessfullySetup() const;
+    bool isSuccessfullySetup() const override;
 
 private:
     // --- Private Member Variables ---

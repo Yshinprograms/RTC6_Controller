@@ -3,7 +3,7 @@
 #include <cmath> // For std::round
 
 // Constructor implementation. Simply initializes the member reference.
-GeometryHandler::GeometryHandler(ListHandler& listHandler)
+GeometryHandler::GeometryHandler(InterfaceListHandler& listHandler)
     : m_listHandler(listHandler) {
     std::cout << "[GeometryHandler] Instance created." << std::endl;
 }
