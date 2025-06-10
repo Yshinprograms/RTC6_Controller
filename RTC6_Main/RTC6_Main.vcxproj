@@ -18,35 +18,43 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\RTC6_Controller\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RTC6_Controller\RTC6_Controller.vcxproj">
+      <Project>{92b2bb74-3351-4550-81bb-804054c4b06c}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{92b2bb74-3351-4550-81bb-804054c4b06c}</ProjectGuid>
-    <RootNamespace>RTC6Controller</RootNamespace>
+    <ProjectGuid>{b9cb7912-858f-4ee1-b736-fb9d6410316b}</ProjectGuid>
+    <RootNamespace>RTC6Main</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -76,10 +84,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -90,70 +101,47 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/w44365 %(AdditionalOptions)</AdditionalOptions>
-      <ExternalWarningLevel>Level3</ExternalWarningLevel>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6DLLx64.dll" "$(OutDir)"
-xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6OUT.out" "$(OutDir)"
-xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6RBF.rbf" "$(OutDir)"
-xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6DAT.dat" "$(OutDir)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalOptions>/w44365 %(AdditionalOptions)</AdditionalOptions>
-      <ExternalWarningLevel>Level3</ExternalWarningLevel>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalLibraryDirectories>
+      <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="DisplayUI.cpp" />
-    <ClCompile Include="GeometryHandler.cpp" />
-    <ClCompile Include="ListHandler.cpp" />
-    <ClCompile Include="Rtc6Communicator.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="DisplayUI.h" />
-    <ClInclude Include="Geometry.h" />
-    <ClInclude Include="GeometryHandler.h" />
-    <ClInclude Include="InterfaceCommunicator.h" />
-    <ClInclude Include="InterfaceListHandler.h" />
-    <ClInclude Include="ListHandler.h" />
-    <ClInclude Include="Rtc6Communicator.h" />
-    <ClInclude Include="Rtc6Constants.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -87,3 +87,4 @@ libs/gmock/gmock_main.lib
 libs/gmock/gtest.lib
 libs/gmock/gtest_main.lib
 RTC6_Controller/Repomix/
+Repomix/

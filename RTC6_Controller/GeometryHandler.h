@@ -4,6 +4,7 @@
 #include "Geometry.h"
 #include <vector>
 
+class GeometryHandler_PrivateMethodsTest;
 // -----------------------------------------------------------------------------
 // GeometryHandler Class
 // -----------------------------------------------------------------------------
@@ -29,22 +30,15 @@ public:
         double focusOffset_mm               // Optical Z-offset in mm
     );
 
-    // Future methods could be added here for other shapes:
-    // void processCircle(Point center, double radius, ...);
-    // void processHatchFill(const std::vector<Point>& boundary, ...);
-
 private:
-    InterfaceListHandler& m_listHandler; // A reference to the object that builds the command list.
+    friend class GeometryHandler_PrivateMethodsTest;
 
-    // --- Unit Conversion Helpers ---
-    // These are kept private as they are implementation details.
+    InterfaceListHandler& m_listHandler;
 
-    // This calibration constant is critical. It defines how many "bits"
-    // the RTC6 needs to move the mirrors to cover 1 mm in the image field.
+    // Defines how many "bits" the RTC6 needs to move the mirrors to cover 1 mm in the image field.
     // This value MUST be determined experimentally for a specific optical setup.
     static constexpr double BITS_PER_MM = 1000.0;
 
-    // Converts real-world units (mm) to RTC6 internal units (bits).
     int mmToBits(double mm) const;
 
     // Converts a laser power percentage (0-100) to a 12-bit DAC value (0-4095).
