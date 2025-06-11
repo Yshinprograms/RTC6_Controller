@@ -27,7 +27,6 @@ protected:
         handler = std::make_unique<GeometryHandler>(dummyMock);
     }
 
-    // Wrapper methods to access private members
     int callMmToBits(double mm) {
         return handler->mmToBits(mm);
     }

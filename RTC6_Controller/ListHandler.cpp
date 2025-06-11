@@ -10,6 +10,8 @@ ListHandler::ListHandler(InterfaceCommunicator& communicator)
     std::cout << "[ListHandler] Instance created. Default fill target: List 1." << std::endl;
 }
 
+ListHandler::~ListHandler(){}
+
 // --- Workflow Management ---
 
 bool ListHandler::setupAutoChangeMode() {

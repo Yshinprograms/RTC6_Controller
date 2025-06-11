@@ -1,3 +1,6 @@
+// GeometryHandler_InteractionTests.cpp
+#pragma once
+
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "GeometryHandler.h"
@@ -20,7 +23,6 @@ public:
     MOCK_METHOD(void, addSetLaserPower, (UINT port, UINT power), (override));
 };
 
-// The fixture name now clearly indicates its purpose: testing interactions.
 class GeometryHandler_InteractionTest : public ::testing::Test {
 protected:
     void SetUp() override {

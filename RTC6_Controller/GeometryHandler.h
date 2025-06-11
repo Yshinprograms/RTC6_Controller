@@ -16,9 +16,8 @@ class GeometryHandler_PrivateMethodsTest;
 // -----------------------------------------------------------------------------
 class GeometryHandler {
 public:
-    // Constructor: Requires a reference to a ListHandler to send commands to.
-    // This dependency is injected, making the class more modular and testable.
     GeometryHandler(InterfaceListHandler& listHandler);
+    ~GeometryHandler();
 
     // Processes a vector of points as a continuous polyline.
     // This method sets the necessary process parameters (speed, power, focus)

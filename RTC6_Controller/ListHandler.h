@@ -18,6 +18,7 @@ class ListHandler : public InterfaceListHandler{
 public:
     // Constructor: Requires a communicator to interact with the hardware.
     ListHandler(InterfaceCommunicator& communicator);
+    ~ListHandler();
 
     bool setupAutoChangeMode() override;
     void reArmAutoChange() override;
@@ -34,6 +35,8 @@ public:
 
 
 private:
+    friend class ListHandler_InteractionTest;
+
     InterfaceCommunicator& m_communicator;       // Reference to the hardware interface
     UINT m_currentListIdForFilling;         // Which list buffer (1 or 2) is the target for new commands
     UINT m_currentListIdForExecution;       // Tracks which list is currently running (or was last run)
