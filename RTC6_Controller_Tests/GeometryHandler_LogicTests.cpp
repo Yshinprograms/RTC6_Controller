@@ -21,7 +21,7 @@ public:
     MOCK_METHOD(void, addSetLaserPower, (UINT port, UINT power), (override));
 };
 
-class GeometryHandler_PrivateMethodsTest : public ::testing::Test {
+class GeometryHandler_LogicTest : public ::testing::Test {
 protected:
     void SetUp() override {
         handler = std::make_unique<GeometryHandler>(dummyMock);
@@ -49,19 +49,19 @@ protected:
 
 // Do NOT directly call handler->method within the Macros
 // May not work correctly, hence use the helper functions!
-TEST_F(GeometryHandler_PrivateMethodsTest, MmToBits_WithIntegerInput_ReturnsCorrectBitValue) {
+TEST_F(GeometryHandler_LogicTest, MmToBits_WithIntegerInput_ReturnsCorrectBitValue) {
     ASSERT_EQ(callMmToBits(10.0), 10000);
     ASSERT_EQ(callMmToBits(-5.0), -5000);
     ASSERT_EQ(callMmToBits(0.0), 0);
 }
 
-TEST_F(GeometryHandler_PrivateMethodsTest, MmToBits_WithDecimalInput_CorrectlyRoundsResult) {
+TEST_F(GeometryHandler_LogicTest, MmToBits_WithDecimalInput_CorrectlyRoundsResult) {
     ASSERT_EQ(callMmToBits(12.3456), 12346); // Rounds up
     ASSERT_EQ(callMmToBits(67.8912), 67891); // Rounds down
     ASSERT_EQ(callMmToBits(99.9995), 100000); // Rounds at the .5 boundary
 }
 
-TEST_F(GeometryHandler_PrivateMethodsTest, PowerToDac_WithOutOfRangeInput_IsClamped) {
+TEST_F(GeometryHandler_LogicTest, PowerToDac_WithOutOfRangeInput_IsClamped) {
     // A value below zero should be clamped to 0.
     EXPECT_EQ(callPowerToDAC(-25.0), 0);
     EXPECT_EQ(callPowerToDAC(-0.001), 0);
@@ -70,7 +70,7 @@ TEST_F(GeometryHandler_PrivateMethodsTest, PowerToDac_WithOutOfRangeInput_IsClam
     EXPECT_EQ(callPowerToDAC(100.001), 4095);
 }
 
-TEST_F(GeometryHandler_PrivateMethodsTest, PowerToDac_WithBoundaryInputs_ReturnsCorrectMinMaxValues) {
+TEST_F(GeometryHandler_LogicTest, PowerToDac_WithBoundaryInputs_ReturnsCorrectMinMaxValues) {
     EXPECT_EQ(callPowerToDAC(0.0), 0);
     EXPECT_EQ(callPowerToDAC(100.0), 4095);
 }

@@ -16,6 +16,7 @@
       <Filter>Settings</Filter>
     </ClCompile>
     <ClCompile Include="ListHandler_InteractionTests.cpp" />
+    <ClCompile Include="ListHandler_LogicTests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -24,10 +25,19 @@
     <ClInclude Include="pch.h">
       <Filter>Settings</Filter>
     </ClInclude>
+    <ClInclude Include="MockRtcApi.h">
+      <Filter>Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="MockCommunicator.h">
+      <Filter>Mocks</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Settings">
       <UniqueIdentifier>{023e2c2a-5e53-4ded-801a-4823d2570b4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Mocks">
+      <UniqueIdentifier>{6dd1a6cd-d3a4-46f7-826a-410ecf06be80}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -30,7 +30,7 @@ public:
     );
 
 private:
-    friend class GeometryHandler_PrivateMethodsTest;
+    friend class GeometryHandler_LogicTest;
 
     InterfaceListHandler& m_listHandler;
 
