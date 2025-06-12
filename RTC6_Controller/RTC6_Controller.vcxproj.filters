@@ -13,11 +13,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Interfaces">
+      <UniqueIdentifier>{fdbe07e6-611c-406f-bd1c-eed5be96d484}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Rtc6Communicator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -28,6 +28,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GeometryHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RtcApiWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -48,6 +51,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Geometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InterfaceRtcApi.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="InterfaceCommunicator.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="InterfaceListHandler.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="RtcApiWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

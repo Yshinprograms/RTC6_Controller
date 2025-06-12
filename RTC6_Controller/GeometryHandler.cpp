@@ -8,6 +8,8 @@ GeometryHandler::GeometryHandler(InterfaceListHandler& listHandler)
     std::cout << "[GeometryHandler] Instance created." << std::endl;
 }
 
+GeometryHandler::~GeometryHandler() = default;
+
 // The core logic for processing a polyline using mark_abs for speed control.
 void GeometryHandler::processPolyline(
     const std::vector<Point>& polyline,
