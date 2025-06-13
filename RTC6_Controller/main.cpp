@@ -1,90 +1,118 @@
+// RTC6_Main/main.cpp
+
 #include <iostream>
 #include <string>
 #include <vector>
 #include <Windows.h>
 
+// Core Controller Components
 #include "Rtc6Communicator.h"
 #include "ListHandler.h"
 #include "GeometryHandler.h"
-#include "RtcApiWrapper.h" // Provides the "real" implementation of the RTC6 API calls.
+#include "RtcApiWrapper.h"
 #include "DisplayUI.h"
-#include "Geometry.h"
 
-// Demonstrates the continuous "ping-pong" buffering process for multiple layers.
-// This function simulates a real L-PBF build by preparing one layer's data
-// while the hardware is busy processing the previous layer.
-void processMultipleLayers(Rtc6Communicator& rtcComm, int numLayers) {
-    if (!rtcComm.isSuccessfullySetup() || numLayers < 1) {
+// OVF Components
+#include "OvfParser.h"
+#include "ProcessData.h"
+
+
+/**
+ * @brief The main processing loop that orchestrates the layer-by-layer marking process.
+ *
+ * This function takes the parsed OVF data and uses a double-buffering ("ping-pong")
+ * strategy to communicate with the RTC6 card. It prepares one layer in a background
+ * list while the hardware is busy marking the current layer.
+ *
+ * @param rtcComm An initialized and ready Rtc6Communicator instance.
+ * @param layers The vector of OvfLayer data parsed from the file.
+*/
+void processOvfLayers(Rtc6Communicator& rtcComm, const std::vector<OvfLayer>& layers) {
+    if (!rtcComm.isSuccessfullySetup() || layers.empty()) {
         std::cerr << "Aborting geometry processing: Board not ready or no layers to process." << std::endl;
         return;
     }
-    std::cout << "\n---------- Processing " << numLayers << " Layers (Continuous Ping-Pong) ----------" << std::endl;
 
-    // --- Object Composition Root ---
-    // Create the concrete implementations of the dependencies.
+    std::cout << "\n---------- Processing " << layers.size() << " Layers from OVF File ----------" << std::endl;
+
+    // 1. Initialize our core handlers
     RtcApiWrapper rtcApi;
     ListHandler listHandler(rtcComm, rtcApi);
     GeometryHandler geoHandler(listHandler);
-    // --- End of Composition ---
 
-    // --- Initial Layer Preparation (outside the loop) ---
-    UINT listToFill = listHandler.getCurrentFillListId();
-    std::cout << "\n[MAIN] Preparing initial List " << listToFill << " for Layer 1..." << std::endl;
-    listHandler.beginListPreparation();
-    std::vector<Point> geometryLayer1 = { {10, 10}, {20, 10}, {20, 20}, {10, 20}, {10, 10} };
-    geoHandler.processPolyline(geometryLayer1, 50.0, 1000.0, 0.0);
-    listHandler.endListPreparation();
+    UINT lastListExecuted = 0; // Keep track of the list we need to wait for
 
-    // Kick off the automated process.
-    listHandler.setupAutoChangeMode();
-    listHandler.executeCurrentListAndCycle();
-    UINT lastListExecuted = listToFill;
+    // 2. The main loop: iterate through each layer from the OVF data
+    for (size_t i = 0; i < layers.size(); ++i) {
+        const auto& currentLayer = layers[i];
+        UINT listToFill = listHandler.getCurrentFillListId();
 
-    // --- Concurrent Processing Loop for Subsequent Layers ---
-    for (int i = 2; i <= numLayers; ++i) {
-        // The list that was just sent for execution is now the busy one.
-        UINT busyList = lastListExecuted;
-        // The list that the hardware will switch TO is the one we need to fill now.
-        listToFill = listHandler.getCurrentFillListId();
+        std::cout << "\n[MAIN] Concurrently preparing Layer " << i << " (Z=" << currentLayer.z_height_mm
+            << "mm) on List " << listToFill << "..." << std::endl;
 
-        std::cout << "\n[MAIN] Hardware is processing Layer " << i - 1 << " on List " << busyList << "." << std::endl;
-        std::cout << "[MAIN] Concurrently preparing List " << listToFill << " for Layer " << i << "..." << std::endl;
-
-        // Prepare the next layer's data.
-        std::vector<Point> nextLayer = { {10.0 + i, 10.0 + i}, {20.0 + i, 10.0 + i}, {20.0 + i, 20.0 + i}, {10.0 + i, 20.0 + i}, {10.0 + i, 10.0 + i} };
+        // 3. Prepare all the commands for the current layer
         listHandler.beginListPreparation();
-        geoHandler.processPolyline(nextLayer, 50.0 + i, 1200.0 + (i * 50), 0.0);
+        for (const auto& polyline : currentLayer.polylines) {
+            geoHandler.processPolyline(
+                polyline.points,
+                polyline.params.laserPowerPercent,
+                polyline.params.markSpeed_mm_s,
+                polyline.params.focusOffset_mm
+            );
+        }
         listHandler.endListPreparation();
 
-        // Re-arm the auto-change trigger for the next transition.
-        listHandler.reArmAutoChange();
+        // 4. If this isn't the very first layer, we must wait for the previous layer to finish marking.
+        if (i > 0) {
+            std::cout << "[MAIN] Waiting for previous layer on List " << lastListExecuted << " to finish..." << std::endl;
 
-        // Before the next iteration, we must wait for the hardware to finish the previous layer.
-        // This ensures we don't try to overwrite a list buffer that is still being read.
-        std::cout << "[MAIN] Waiting for List " << busyList << " to become free..." << std::endl;
-        while (listHandler.isListBusy(busyList)) {
-            Sleep(10); // Polling delay to prevent maxing out a CPU core.
+            // THIS IS THE "SIGNAL": We poll until the hardware list is free.
+            while (listHandler.isListBusy(lastListExecuted)) {
+                Sleep(10); // The "small delay" you mentioned.
+            }
+            std::cout << "[MAIN] List " << lastListExecuted << " is now free." << std::endl;
         }
-        std::cout << "[MAIN] List " << busyList << " is now free." << std::endl;
 
+        // 5. Command the hardware to execute the list we just prepared.
+        // This function also internally cycles the list handler to prepare for the *next* layer.
+        std::cout << "[MAIN] Executing Layer " << i << " on List " << listToFill << "." << std::endl;
+        listHandler.executeCurrentListAndCycle();
         lastListExecuted = listToFill;
     }
 
-    // After the loop, wait for the very last layer to finish processing.
-    std::cout << "\n[MAIN] All lists prepared. Waiting for final execution on List " << lastListExecuted << "..." << std::endl;
-    while (listHandler.isListBusy(lastListExecuted)) {
-        Sleep(50);
+    // 6. After the loop, we must wait for the final layer to complete.
+    if (lastListExecuted != 0) {
+        std::cout << "\n[MAIN] All lists prepared. Waiting for final execution on List " << lastListExecuted << "..." << std::endl;
+        while (listHandler.isListBusy(lastListExecuted)) {
+            Sleep(50);
+        }
     }
-    std::cout << "\n---------- All " << numLayers << " Layers Processed ----------\n" << std::endl;
+
+    std::cout << "\n---------- All " << layers.size() << " Layers Processed ----------\n" << std::endl;
 }
+
 
 int main() {
     DisplayUI ui;
     ui.printWelcomeMessage();
 
+    // --- OVF Parsing ---
+    std::cout << "\n---------- Parsing OVF File ----------" << std::endl;
+    OvfParser parser;
+    std::vector<OvfLayer> layers = parser.parseFile("C:\\Users\\pin20\\Downloads\\SIMTech_Internship\\RTC6_Controller\\RTC6_Controller\\test_ovf.ovf");
+
+    if (layers.empty()) {
+        std::cerr << "Could not parse or file is empty. Aborting." << std::endl;
+    }
+    else {
+        std::cout << "Successfully parsed " << layers.size() << " layer(s) from OVF file." << std::endl;
+    }
+
+    // --- Board Communication and Processing ---
     Rtc6Communicator rtcCommunicator(1);
     if (rtcCommunicator.initializeAndShowBoardInfo()) {
-        processMultipleLayers(rtcCommunicator, 5);
+        // Pass the parsed layers to our new processing function
+        processOvfLayers(rtcCommunicator, layers);
     }
 
     ui.printGoodbyeMessage();

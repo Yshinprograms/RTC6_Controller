@@ -5,7 +5,7 @@
 #include "gmock/gmock.h"
 #include "GeometryHandler.h"
 #include "InterfaceListHandler.h"
-#include "Geometry.h"
+#include "ProcessData.h"
 
 class MockListHandler : public InterfaceListHandler {
 public:
