@@ -1,121 +1,145 @@
 #include "OvfParser.h"
-#include <fstream>
 #include <iostream>
 #include <iomanip>
-#include <string.h>
-#include <cerrno>
+#include <stdexcept>
 
 // Official Protobuf utilities
 #include <google/protobuf/util/delimited_message_util.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
-// Generated Protobuf headers
-#include "open_vector_format.pb.h"
-#include "ovf_lut.pb.h"
+OvfParser::OvfParser() {}
 
-// The public method signature now matches the header file
-open_vector_format::Job OvfParser::parseFile(const std::string& filePath) {
-    std::cout << "[OvfParser] Starting to parse file: " << filePath << std::endl;
-    open_vector_format::Job job; // This is the object we will build and return.
+OvfParser::~OvfParser() {
+    if (m_file.is_open()) {
+        m_file.close();
+    }
+}
 
-    std::ifstream file(filePath, std::ios::in | std::ios::binary);
-    if (!file) {
-        std::cerr << "FATAL: [OvfParser] Cannot open file stream. System error: ";
-#ifdef _MSC_VER
-        char err_buf[256];
-        if (strerror_s(err_buf, sizeof(err_buf), errno) == 0) {
-            std::cerr << err_buf;
-        }
-        else {
-            std::cerr << "Unknown error";
-        }
-#else
-        std::cerr << strerror(errno);
-#endif
-        std::cerr << std::endl;
-        return job; // Return empty job
+bool OvfParser::openFile(const std::string& filePath) {
+    std::cout << "[OvfParser] LAZY OPEN: Opening file and reading LUTs: " << filePath << std::endl;
+    if (m_file.is_open()) {
+        m_file.close();
+    }
+    m_jobShell.Clear();
+    m_jobLut.Clear();
+    m_workPlaneLuts.clear();
+
+    m_file.open(filePath, std::ios::in | std::ios::binary);
+    if (!m_file) {
+        std::cerr << "FATAL: [OvfParser] Cannot open file stream." << std::endl;
+        return false;
     }
 
-    // 1. Verify Magic Number
+    // Magic number and LUT position are read directly.
     char magic[4];
-    file.read(magic, 4);
-    if (!file.good() || file.gcount() != 4 || magic[0] != 0x4c || magic[1] != 0x56 || magic[2] != 0x46 || magic[3] != 0x21) {
+    m_file.read(magic, 4);
+    if (!m_file.good() || /* ... checks ... */ (magic[0] != 0x4c || magic[1] != 0x56 || magic[2] != 0x46 || magic[3] != 0x21)) {
         std::cerr << "FATAL: [OvfParser] File magic number mismatch or read error." << std::endl;
-        return job;
+        return false;
     }
-    std::cout << "[OvfParser] Magic number verified." << std::endl;
-
-    // 2. Read JobLUT position
     int64_t job_lut_position;
-    file.read(reinterpret_cast<char*>(&job_lut_position), sizeof(job_lut_position));
-    if (!file.good()) {
+    m_file.read(reinterpret_cast<char*>(&job_lut_position), sizeof(job_lut_position));
+    if (!m_file.good()) {
         std::cerr << "FATAL: [OvfParser] Failed to read JobLUT position pointer." << std::endl;
-        return job;
+        return false;
     }
-    std::cout << "[OvfParser] JobLUT pointer is: 0x" << std::hex << job_lut_position << std::dec << std::endl;
 
-    // 3. Parse JobLUT
-    file.seekg(job_lut_position);
-    if (!file.good()) {
-        std::cerr << "FATAL: [OvfParser] Failed to seek to JobLUT position." << std::endl;
-        return job;
-    }
-    google::protobuf::io::IstreamInputStream zero_copy_input_job_lut(&file);
-    open_vector_format::JobLUT job_lut; // <-- FIX: Declared here to be in scope
-    if (!google::protobuf::util::ParseDelimitedFromZeroCopyStream(&job_lut, &zero_copy_input_job_lut, nullptr)) {
-        std::cerr << "FATAL: [OvfParser] Failed to parse JobLUT." << std::endl;
-        return job;
+    // --- Parse JobLUT ---
+    m_file.seekg(job_lut_position);
+    { // Use a scope to create a temporary wrapper.
+        google::protobuf::io::IstreamInputStream zero_copy_input(&m_file);
+        if (!google::protobuf::util::ParseDelimitedFromZeroCopyStream(&m_jobLut, &zero_copy_input, nullptr)) {
+            std::cerr << "FATAL: [OvfParser] Failed to parse JobLUT." << std::endl;
+            return false;
+        }
     }
     std::cout << "[OvfParser] JobLUT parsed successfully." << std::endl;
 
-    // 4. Parse JobShell and store it in our return object
-    file.clear();
-    file.seekg(job_lut.jobshellposition());
-    if (!file.good()) {
-        std::cerr << "FATAL: [OvfParser] Failed to seek to JobShell position." << std::endl;
-        return job;
-    }
-    google::protobuf::io::IstreamInputStream zero_copy_input_shell(&file);
-    if (!google::protobuf::util::ParseDelimitedFromZeroCopyStream(&job, &zero_copy_input_shell, nullptr)) {
-        std::cerr << "ERROR: [OvfParser] Failed to parse JobShell." << std::endl;
-        return {};
-    }
-    std::cout << "[OvfParser] JobShell parsed successfully. Job Name: " << job.job_meta_data().job_name() << std::endl;
-
-    // 5. Iterate through WorkPlanes and load their full data into the job object
-    std::cout << "[OvfParser] Loading geometry for " << job_lut.workplanepositions_size() << " work planes..." << std::endl;
-    for (int i = 0; i < job_lut.workplanepositions_size(); ++i) {
-        file.clear();
-        file.seekg(job_lut.workplanepositions(i));
-        int64_t wp_lut_position;
-        file.read(reinterpret_cast<char*>(&wp_lut_position), sizeof(wp_lut_position));
-
-        file.clear();
-        file.seekg(wp_lut_position);
-        google::protobuf::io::IstreamInputStream zero_copy_input_wp_lut(&file);
-        open_vector_format::WorkPlaneLUT wp_lut;
-        google::protobuf::util::ParseDelimitedFromZeroCopyStream(&wp_lut, &zero_copy_input_wp_lut, nullptr);
-
-        // Add a new WorkPlane to our job's list
-        open_vector_format::WorkPlane* work_plane = job.add_work_planes();
-
-        // Parse the WorkPlaneShell directly into the newly added WorkPlane
-        file.clear();
-        file.seekg(wp_lut.workplaneshellposition());
-        google::protobuf::io::IstreamInputStream zero_copy_input_wp_shell(&file);
-        google::protobuf::util::ParseDelimitedFromZeroCopyStream(work_plane, &zero_copy_input_wp_shell, nullptr);
-
-        // Iterate and parse each VectorBlock, adding it to the current work_plane
-        for (int j = 0; j < wp_lut.vectorblockspositions_size(); ++j) {
-            file.clear();
-            file.seekg(wp_lut.vectorblockspositions(j));
-            google::protobuf::io::IstreamInputStream zero_copy_input_vb(&file);
-
-            // Add a new VectorBlock to the WorkPlane and parse the data into it
-            google::protobuf::util::ParseDelimitedFromZeroCopyStream(work_plane->add_vector_blocks(), &zero_copy_input_vb, nullptr);
+    // --- Parse JobShell ---
+    m_file.clear(); // CRITICAL: Clear flags after any read operation.
+    m_file.seekg(m_jobLut.jobshellposition());
+    {
+        google::protobuf::io::IstreamInputStream zero_copy_input(&m_file);
+        if (!google::protobuf::util::ParseDelimitedFromZeroCopyStream(&m_jobShell, &zero_copy_input, nullptr)) {
+            std::cerr << "ERROR: [OvfParser] Failed to parse JobShell." << std::endl;
+            return false;
         }
     }
+    std::cout << "[OvfParser] JobShell parsed. Job Name: " << m_jobShell.job_meta_data().job_name() << std::endl;
 
-    std::cout << "[OvfParser] Parsing complete. Job has " << job.work_planes_size() << " layers." << std::endl;
-    return job;
+    // --- Iterate and parse ONLY the WorkPlaneLUTs ---
+    std::cout << "[OvfParser] Reading " << m_jobLut.workplanepositions_size() << " WorkPlane LUTs..." << std::endl;
+    m_workPlaneLuts.reserve(m_jobLut.workplanepositions_size());
+    for (int i = 0; i < m_jobLut.workplanepositions_size(); ++i) {
+        m_file.clear();
+        m_file.seekg(m_jobLut.workplanepositions(i));
+        int64_t wp_lut_position;
+        m_file.read(reinterpret_cast<char*>(&wp_lut_position), sizeof(wp_lut_position));
+        if (!m_file.good()) {
+            std::cerr << "ERROR: [OvfParser] Failed to read WorkPlaneLUT pointer for layer " << i << std::endl;
+            return false;
+        }
+
+        m_file.clear();
+        m_file.seekg(wp_lut_position);
+
+        open_vector_format::WorkPlaneLUT wp_lut;
+        {
+            google::protobuf::io::IstreamInputStream zero_copy_input(&m_file);
+            if (!google::protobuf::util::ParseDelimitedFromZeroCopyStream(&wp_lut, &zero_copy_input, nullptr)) {
+                std::cerr << "ERROR: [OvfParser] Failed to parse WorkPlaneLUT for layer " << i << std::endl;
+                return false;
+            }
+        }
+        m_workPlaneLuts.push_back(wp_lut);
+    }
+    std::cout << "[OvfParser] LAZY OPEN complete. Ready to load geometry on demand." << std::endl;
+    return true;
+}
+
+int OvfParser::getNumberOfWorkPlanes() const {
+    return m_jobLut.workplanepositions_size();
+}
+
+open_vector_format::Job OvfParser::getJobShell() const {
+    return m_jobShell;
+}
+
+open_vector_format::WorkPlane OvfParser::getWorkPlane(int index) {
+    // This function already used the correct pattern, so it remains unchanged.
+    std::cout << "[OvfParser] LAZY LOAD: Loading full geometry for WorkPlane " << index << std::endl;
+    if (index < 0 || index >= m_workPlaneLuts.size()) {
+        throw std::out_of_range("WorkPlane index is out of range.");
+    }
+    if (!m_file.is_open()) {
+        throw std::runtime_error("File is not open. Call openFile() first.");
+    }
+    const auto& wp_lut = m_workPlaneLuts[index];
+    open_vector_format::WorkPlane work_plane;
+    m_file.clear();
+    m_file.seekg(wp_lut.workplaneshellposition());
+    if (!m_file.good()) {
+        throw std::runtime_error("Failed to seek to WorkPlaneShell position for index " + std::to_string(index));
+    }
+    {
+        google::protobuf::io::IstreamInputStream zero_copy_input(&m_file);
+        if (!google::protobuf::util::ParseDelimitedFromZeroCopyStream(&work_plane, &zero_copy_input, nullptr)) {
+            throw std::runtime_error("Failed to parse WorkPlaneShell for index " + std::to_string(index));
+        }
+    }
+    for (int j = 0; j < wp_lut.vectorblockspositions_size(); ++j) {
+        m_file.clear();
+        m_file.seekg(wp_lut.vectorblockspositions(j));
+        if (!m_file.good()) {
+            throw std::runtime_error("Failed to seek to VectorBlock position " + std::to_string(j));
+        }
+        {
+            google::protobuf::io::IstreamInputStream zero_copy_input(&m_file);
+            if (!google::protobuf::util::ParseDelimitedFromZeroCopyStream(work_plane.add_vector_blocks(), &zero_copy_input, nullptr)) {
+                throw std::runtime_error("Failed to parse VectorBlock " + std::to_string(j) + " in WorkPlane " + std::to_string(index));
+            }
+        }
+    }
+    std::cout << "[OvfParser] LAZY LOAD complete. Loaded " << work_plane.vector_blocks_size() << " vector blocks." << std::endl;
+    return work_plane;
 }
