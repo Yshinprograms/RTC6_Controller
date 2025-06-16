@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
+#include <thread>
+#include <chrono>
 
 #include "Rtc6Communicator.h"
 #include "ListHandler.h"
@@ -12,16 +14,12 @@
 
 #include "open_vector_format.pb.h" // Unchanged
 
-// =========================================================================
-// CHANGE: The function signature is updated to accept the parser.
-// It will use the parser to get the job shell and then fetch each layer.
 void processOvfJob(Rtc6Communicator& rtcComm, OvfParser& parser) {
     if (!rtcComm.isSuccessfullySetup()) {
         std::cerr << "Aborting geometry processing: Board not ready." << std::endl;
         return;
     }
 
-    // CHANGE: Get the job's shell (metadata) from the parser.
     const auto jobShell = parser.getJobShell();
     const int num_layers = parser.getNumberOfWorkPlanes();
 
@@ -29,6 +27,10 @@ void processOvfJob(Rtc6Communicator& rtcComm, OvfParser& parser) {
         std::cerr << "Aborting geometry processing: No layers to process." << std::endl;
         return;
     }
+
+    // NEW: Define a constant for the physical recoating delay in milliseconds.
+    // This simulates the build plate lowering and the powder recoater arm moving.
+    const int recoating_delay_ms = 5000; // 5 seconds
 
     std::cout << "\n---------- Processing " << num_layers << " Layers from OVF Job ----------" << std::endl;
 
@@ -38,22 +40,16 @@ void processOvfJob(Rtc6Communicator& rtcComm, OvfParser& parser) {
 
     UINT lastListExecuted = 0;
 
-    // CHANGE: The main loop is now an index-based for loop.
     for (int i = 0; i < num_layers; ++i) {
-        // CHANGE: Fetch the full WorkPlane object for the current layer ON DEMAND.
         const auto work_plane = parser.getWorkPlane(i);
-
         UINT listToFill = listHandler.getCurrentFillListId();
 
+        // This whole block (preparing the list) happens CONCURRENTLY while the previous layer is printing.
         std::cout << "\n[MAIN] Concurrently preparing Layer " << work_plane.work_plane_number()
             << " (Z=" << work_plane.z_pos_in_mm() << "mm) on List " << listToFill << "..." << std::endl;
-
         listHandler.beginListPreparation();
-
-        // The inner loop logic remains the same, operating on the fetched work_plane.
         for (const auto& block : work_plane.vector_blocks()) {
             try {
-                // The marking parameters are retrieved from the jobShell we got earlier.
                 const auto& params = jobShell.marking_params_map().at(block.marking_params_key());
                 geoHandler.processVectorBlock(block, params);
             }
@@ -62,15 +58,21 @@ void processOvfJob(Rtc6Communicator& rtcComm, OvfParser& parser) {
                     << " not found. Skipping vector block." << std::endl;
             }
         }
-
         listHandler.endListPreparation();
 
+        // Now, we wait for the PREVIOUS layer's hardware task to finish.
         if (lastListExecuted != 0) {
-            std::cout << "[MAIN] Waiting for previous layer on List " << lastListExecuted << " to finish..." << std::endl;
+            std::cout << "[MAIN] Waiting for previous layer on List " << lastListExecuted << " to finish laser marking..." << std::endl;
             while (listHandler.isListBusy(lastListExecuted)) {
-                Sleep(10);
+                // In a real app, this might have a timeout. For now, we wait indefinitely.
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
             std::cout << "[MAIN] List " << lastListExecuted << " is now free." << std::endl;
+
+            // NEW: Add the simulated delay for the physical recoating process.
+            // This happens AFTER the previous layer's laser work is done, and BEFORE the next layer's begins.
+            std::cout << "[MAIN] Simulating " << recoating_delay_ms << "ms for powder bed recoating..." << std::endl;
+            std::this_thread::sleep_for(std::chrono::milliseconds(recoating_delay_ms));
         }
 
         std::cout << "[MAIN] Executing Layer " << work_plane.work_plane_number() << " on List " << listToFill << "." << std::endl;
@@ -79,9 +81,9 @@ void processOvfJob(Rtc6Communicator& rtcComm, OvfParser& parser) {
     }
 
     if (lastListExecuted != 0) {
-        std::cout << "\n[MAIN] All lists prepared. Waiting for final execution on List " << lastListExecuted << "..." << std::endl;
+        std::cout << "\n[MAIN] All lists prepared. Waiting for final layer execution on List " << lastListExecuted << "..." << std::endl;
         while (listHandler.isListBusy(lastListExecuted)) {
-            Sleep(50);
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
     }
     std::cout << "\n---------- All " << num_layers << " Layers Processed ----------\n" << std::endl;
