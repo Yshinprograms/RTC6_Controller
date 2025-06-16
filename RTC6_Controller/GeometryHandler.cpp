@@ -9,6 +9,32 @@ GeometryHandler::GeometryHandler(InterfaceListHandler& listHandler)
 
 GeometryHandler::~GeometryHandler() = default;
 
+
+/**
+ * @brief Translates a single OVF VectorBlock into a sequence of RTC6 list commands.
+ *
+ * This function acts as the bridge between the OVF data model and the hardware control
+ * model. It is the "specialist" that knows how to interpret a piece of geometry and
+ * its associated parameters, and then delegate the correct API calls to the ListHandler.
+ *
+ * The process is a two-step sequence:
+ * 1.  **Set Parameters:** It first sets the RTC6 list parameters (speed, power, focus)
+ *     that will apply to the entire block.
+ * 2.  **Generate Geometry:** It then uses a switch statement to handle the specific
+ *     type of geometry in the block (e.g., a continuous line, a series of hatches).
+ *     Based on the type, it iterates through the points and calls the appropriate
+ *     jump and mark commands on the ListHandler.
+ *
+ * Tracks:
+ * - Laser speed in mm/s
+ * - Focus offset in mm (converted to bits)
+ * - Laser power in percentage (converted to DAC value)
+ * 
+ * @param block The OVF VectorBlock to process, containing the geometry data. Passed
+ *              by const reference for high efficiency.
+ * @param params The OVF MarkingParams for this block, containing the laser settings.
+ *               Passed by const reference.
+ */
 void GeometryHandler::processVectorBlock(
 	const open_vector_format::VectorBlock& block,
 	const open_vector_format::MarkingParams& params)

@@ -40,17 +40,23 @@ void processOvfJob(Rtc6Communicator& rtcComm, OvfParser& parser) {
 
     UINT lastListExecuted = 0;
 
+	// Iterate through each layer in the job and prepare the lists concurrently.
     for (int i = 0; i < num_layers; ++i) {
         const auto work_plane = parser.getWorkPlane(i);
         UINT listToFill = listHandler.getCurrentFillListId();
 
-        // This whole block (preparing the list) happens CONCURRENTLY while the previous layer is printing.
-        std::cout << "\n[MAIN] Concurrently preparing Layer " << work_plane.work_plane_number()
-            << " (Z=" << work_plane.z_pos_in_mm() << "mm) on List " << listToFill << "..." << std::endl;
+        std::cout << "\n[MAIN] Concurrently preparing Layer " 
+            << work_plane.work_plane_number()
+            << " (Z=" << work_plane.z_pos_in_mm() << "mm) on List " 
+            << listToFill << "..." << std::endl;
+
         listHandler.beginListPreparation();
+		// Iterate through each vector block in the current work plane and add it to the list.
         for (const auto& block : work_plane.vector_blocks()) {
             try {
-                const auto& params = jobShell.marking_params_map().at(block.marking_params_key());
+                const auto& params 
+					// Glossary look up: Get laser parameters for this vector block.
+                    = jobShell.marking_params_map().at(block.marking_params_key());
                 geoHandler.processVectorBlock(block, params);
             }
             catch (const std::out_of_range& e) {
