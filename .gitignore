@@ -4,8 +4,10 @@
 [Rr]eleases/
 [Rr]eleasesPublic/
 [Oo]utput/
-[Ll]og/
-[Ll]ogs/
+# [Ll]og/
+# [Ll]ogs/
+
+# !absl/log
 
 # User-specific files
 *.user

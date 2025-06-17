@@ -4,10 +4,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.14.36202.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RTC6_Controller", "RTC6_Controller\RTC6_Controller.vcxproj", "{92B2BB74-3351-4550-81BB-804054C4B06C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9C32B6C1-D4EF-4BF8-94A7-E6EBDA59EA59} = {9C32B6C1-D4EF-4BF8-94A7-E6EBDA59EA59}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RTC6_Controller_Tests", "RTC6_Controller_Tests\RTC6_Controller_Tests.vcxproj", "{1AA91AA8-0851-4672-B365-169354C5C828}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RTC6_Main", "RTC6_Main\RTC6_Main.vcxproj", "{B9CB7912-858F-4EE1-B736-FB9D6410316B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ovf_Core", "Ovf_Core\Ovf_Core.vcxproj", "{9C32B6C1-D4EF-4BF8-94A7-E6EBDA59EA59}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +46,14 @@ Global
 		{B9CB7912-858F-4EE1-B736-FB9D6410316B}.Release|x64.Build.0 = Release|x64
 		{B9CB7912-858F-4EE1-B736-FB9D6410316B}.Release|x86.ActiveCfg = Release|Win32
 		{B9CB7912-858F-4EE1-B736-FB9D6410316B}.Release|x86.Build.0 = Release|Win32
+		{9C32B6C1-D4EF-4BF8-94A7-E6EBDA59EA59}.Debug|x64.ActiveCfg = Debug|x64
+		{9C32B6C1-D4EF-4BF8-94A7-E6EBDA59EA59}.Debug|x64.Build.0 = Debug|x64
+		{9C32B6C1-D4EF-4BF8-94A7-E6EBDA59EA59}.Debug|x86.ActiveCfg = Debug|Win32
+		{9C32B6C1-D4EF-4BF8-94A7-E6EBDA59EA59}.Debug|x86.Build.0 = Debug|Win32
+		{9C32B6C1-D4EF-4BF8-94A7-E6EBDA59EA59}.Release|x64.ActiveCfg = Release|x64
+		{9C32B6C1-D4EF-4BF8-94A7-E6EBDA59EA59}.Release|x64.Build.0 = Release|x64
+		{9C32B6C1-D4EF-4BF8-94A7-E6EBDA59EA59}.Release|x86.ActiveCfg = Release|Win32
+		{9C32B6C1-D4EF-4BF8-94A7-E6EBDA59EA59}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
