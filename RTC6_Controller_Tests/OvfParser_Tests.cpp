@@ -3,30 +3,23 @@
 #include "OvfParser.h"
 #include "open_vector_format.pb.h"
 #include <stdexcept>
-#include <fstream> // Needed for creating a dummy malformed file
+#include <fstream> 
 
 class OvfParserTest : public ::testing::Test {
 protected:
-    // This function is called once before all tests in this suite are run.
     static void SetUpTestSuite() {
-        // We no longer generate complex files here. Instead, we just create
-        // a simple malformed file for one specific test case.
-        // The main test files (`valid_3_layers.ovf`, `empty_0_layers.ovf`)
-        // are assumed to exist as assets.
+        // Create a simple malformed file for one specific test case.
         std::ofstream malformed(s_malformedFile, std::ios::binary);
         malformed << "THIS IS NOT AN OVF FILE";
         malformed.close();
     }
 
-    // This function is called once after all tests are done.
     static void TearDownTestSuite() {
         // Clean up the one file we created.
         remove(s_malformedFile.c_str());
     }
 
-    // This function is called before each individual test.
     void SetUp() override {
-        // Create a fresh parser instance for each test to ensure they are isolated.
         parser = std::make_unique<OvfParser>();
     }
 
@@ -47,52 +40,77 @@ const std::string OvfParserTest::s_nonExistentFile = "no_such_file.ovf";
 
 
 // =================================================================================
-// ===                            THE TEST CASES                                 ===
+// ===                            TEST CASES                                     ===
 // =================================================================================
 
-TEST_F(OvfParserTest, OpenFileSucceedsForValidFile) {
+TEST_F(OvfParserTest, OpenFile_WithValidFile_ReturnsTrueAndParsesMetadata) {
     ASSERT_TRUE(parser->openFile(s_validFile));
     EXPECT_EQ(parser->getNumberOfWorkPlanes(), 3);
+
     auto jobShell = parser->getJobShell();
     ASSERT_TRUE(jobShell.has_job_meta_data());
     EXPECT_EQ(jobShell.job_meta_data().job_name(), "TestJob");
 }
 
-TEST_F(OvfParserTest, OpenFileSucceedsForEmptyLayerFile) {
+TEST_F(OvfParserTest, OpenFile_WithEmptyLayerFile_ReturnsTrueAndSetsLayerCountToZero) {
     ASSERT_TRUE(parser->openFile(s_emptyFile));
     EXPECT_EQ(parser->getNumberOfWorkPlanes(), 0);
 }
 
-TEST_F(OvfParserTest, OpenFileFailsForMalformedFile) {
-    ASSERT_FALSE(parser->openFile(s_malformedFile));
+TEST_F(OvfParserTest, OpenFile_WithMalformedFile_ReturnsFalse) {
+    EXPECT_FALSE(parser->openFile(s_malformedFile));
 }
 
-TEST_F(OvfParserTest, OpenFileFailsForNonExistentFile) {
-    ASSERT_FALSE(parser->openFile(s_nonExistentFile));
+TEST_F(OvfParserTest, OpenFile_WithNonExistentFile_ReturnsFalse) {
+    EXPECT_FALSE(parser->openFile(s_nonExistentFile));
 }
 
-TEST_F(OvfParserTest, GetWorkPlaneSucceedsAndReturnsCorrectData) {
+TEST_F(OvfParserTest, OpenFile_WhenCalledTwice_ResetsStateAndParsesSecondFile) {
+    // First call with the valid file
     ASSERT_TRUE(parser->openFile(s_validFile));
+    ASSERT_EQ(parser->getNumberOfWorkPlanes(), 3);
+
+    // Second call with the empty file
+    ASSERT_TRUE(parser->openFile(s_emptyFile));
+    // State should be completely reset.
+    EXPECT_EQ(parser->getNumberOfWorkPlanes(), 0);
+}
+
+TEST_F(OvfParserTest, GetWorkPlane_WithValidIndex_ReturnsCorrectData) {
+    parser->openFile(s_validFile);
+
     open_vector_format::WorkPlane wp;
     ASSERT_NO_THROW(wp = parser->getWorkPlane(1));
+
     EXPECT_EQ(wp.work_plane_number(), 1);
     EXPECT_FLOAT_EQ(wp.z_pos_in_mm(), 0.05f);
 }
 
-TEST_F(OvfParserTest, GetWorkPlaneThrowsExceptionIfFileNotOpen) {
+TEST_F(OvfParserTest, GetWorkPlane_WhenFileIsNotOpen_ThrowsRuntimeError) {
+    // Expect that calling getWorkPlane before openFile throws the correct exception.
     EXPECT_THROW(parser->getWorkPlane(0), std::runtime_error);
 }
 
-TEST_F(OvfParserTest, GetWorkPlaneThrowsExceptionForInvalidIndex) {
+TEST_F(OvfParserTest, GetWorkPlane_WithInvalidIndex_ThrowsOutOfRange) {
     parser->openFile(s_validFile);
-    ASSERT_THROW(parser->getWorkPlane(3), std::out_of_range); // Boundary check
-    ASSERT_THROW(parser->getWorkPlane(-1), std::out_of_range); // Negative check
+
+    // Check boundaries: one past the end, and a negative index.
+    EXPECT_THROW(parser->getWorkPlane(3), std::out_of_range);
+    EXPECT_THROW(parser->getWorkPlane(-1), std::out_of_range);
 }
 
-TEST_F(OvfParserTest, RandomAccessOfWorkPlanesSucceeds) {
-    ASSERT_TRUE(parser->openFile(s_validFile));
-    // Access layers out of order to test the file seeking logic.
-    ASSERT_NO_THROW(parser->getWorkPlane(2));
-    ASSERT_NO_THROW(parser->getWorkPlane(0));
-    ASSERT_NO_THROW(parser->getWorkPlane(1));
+TEST_F(OvfParserTest, GetWorkPlane_WithRandomAccessOrder_ReturnsCorrectDataForEachLayer) {
+    parser->openFile(s_validFile);
+
+    open_vector_format::WorkPlane wp;
+
+    // Access layers out of order to stress the file seeking logic.
+    ASSERT_NO_THROW(wp = parser->getWorkPlane(2));
+    EXPECT_EQ(wp.work_plane_number(), 2);
+
+    ASSERT_NO_THROW(wp = parser->getWorkPlane(0));
+    EXPECT_EQ(wp.work_plane_number(), 0);
+
+    ASSERT_NO_THROW(wp = parser->getWorkPlane(1));
+    EXPECT_EQ(wp.work_plane_number(), 1);
 }
