@@ -147,14 +147,15 @@ open_vector_format::Job OvfParser::getJobShell() const {
 * @throws std::out_of_range if the index is invalid, or std::runtime_error if file operations fail.
 */
 open_vector_format::WorkPlane OvfParser::getWorkPlane(int index) {
-    // This function already used the correct pattern, so it remains unchanged.
+    if (!m_file.is_open()) {
+        throw std::runtime_error("File is not open. Call openFile() first.");
+    }
+
     std::cout << "[OvfParser] LAZY LOAD: Loading full geometry for WorkPlane " << index << std::endl;
     if (index < 0 || index >= m_workPlaneLuts.size()) {
         throw std::out_of_range("WorkPlane index is out of range.");
     }
-    if (!m_file.is_open()) {
-        throw std::runtime_error("File is not open. Call openFile() first.");
-    }
+
     const auto& wp_lut = m_workPlaneLuts[index];
     open_vector_format::WorkPlane work_plane;
     m_file.clear();

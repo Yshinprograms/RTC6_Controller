@@ -62,6 +62,13 @@
       <AdditionalLibraryDirectories>$(SolutionDir)libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>REM Generate the valid file directly into the test's output directory.
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)valid_3_layers.ovf" 3
+
+REM Generate the empty file directly into the test's output directory.
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -80,6 +87,13 @@
       <AdditionalLibraryDirectories>$(SolutionDir)libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>REM Generate the valid file directly into the test's output directory.
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)valid_3_layers.ovf" 3
+
+REM Generate the empty file directly into the test's output directory.
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -99,6 +113,13 @@
       <AdditionalLibraryDirectories>$(SolutionDir)libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>REM Generate the valid file directly into the test's output directory.
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)valid_3_layers.ovf" 3
+
+REM Generate the empty file directly into the test's output directory.
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -118,6 +139,13 @@
       <AdditionalLibraryDirectories>$(SolutionDir)libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>REM Generate the valid file directly into the test's output directory.
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)valid_3_layers.ovf" 3
+
+REM Generate the empty file directly into the test's output directory.
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="MockCommunicator.h" />
@@ -131,6 +159,7 @@
     <ClCompile Include="GeometryHandler_LogicTests.cpp" />
     <ClCompile Include="ListHandler_InteractionTests.cpp" />
     <ClCompile Include="ListHandler_LogicTests.cpp" />
+    <ClCompile Include="OvfParser_Tests.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
