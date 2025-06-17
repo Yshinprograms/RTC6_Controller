@@ -54,12 +54,12 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -72,12 +72,12 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -89,14 +89,14 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -108,14 +108,14 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -145,6 +145,9 @@
     <ResourceCompile Include="RTC6_Controller_Tests.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ovf_Core\Ovf_Core.vcxproj">
+      <Project>{9c32b6c1-d4ef-4bf8-94a7-e6ebda59ea59}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\RTC6_Controller\RTC6_Controller.vcxproj">
       <Project>{92b2bb74-3351-4550-81bb-804054c4b06c}</Project>
     </ProjectReference>

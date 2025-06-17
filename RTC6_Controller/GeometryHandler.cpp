@@ -1,59 +1,93 @@
 #include "GeometryHandler.h"
 #include <iostream>
-#include <cmath> // For std::round
+#include <cmath>
 
-// Constructor implementation. Simply initializes the member reference.
 GeometryHandler::GeometryHandler(InterfaceListHandler& listHandler)
-    : m_listHandler(listHandler) {
-    std::cout << "[GeometryHandler] Instance created." << std::endl;
+	: m_listHandler(listHandler) {
+	std::cout << "[GeometryHandler] Instance created." << std::endl;
 }
 
 GeometryHandler::~GeometryHandler() = default;
 
-// The core logic for processing a polyline using mark_abs for speed control.
-void GeometryHandler::processPolyline(
-    const std::vector<Point>& polyline,
-    double laserPowerPercent,
-    double markSpeed_mm_s,
-    double focusOffset_mm) {
 
-    // A polyline needs at least a start and an end point.
-    if (polyline.size() < 2) {
-        std::cerr << "WARNING: [GeometryHandler] Cannot process polyline with fewer than 2 points." << std::endl;
-        return;
-    }
+/**
+ * @brief Translates a single OVF VectorBlock into a sequence of RTC6 list commands.
+ *
+ * This function acts as the bridge between the OVF data model and the hardware control
+ * model. It is the "specialist" that knows how to interpret a piece of geometry and
+ * its associated parameters, and then delegate the correct API calls to the ListHandler.
+ *
+ * The process is a two-step sequence:
+ * 1.  **Set Parameters:** It first sets the RTC6 list parameters (speed, power, focus)
+ *     that will apply to the entire block.
+ * 2.  **Generate Geometry:** It then uses a switch statement to handle the specific
+ *     type of geometry in the block (e.g., a continuous line, a series of hatches).
+ *     Based on the type, it iterates through the points and calls the appropriate
+ *     jump and mark commands on the ListHandler.
+ *
+ * Tracks:
+ * - Laser speed in mm/s
+ * - Focus offset in mm (converted to bits)
+ * - Laser power in percentage (converted to DAC value)
+ * 
+ * @param block The OVF VectorBlock to process, containing the geometry data. Passed
+ *              by const reference for high efficiency.
+ * @param params The OVF MarkingParams for this block, containing the laser settings.
+ *               Passed by const reference.
+ */
+void GeometryHandler::processVectorBlock(
+	const open_vector_format::VectorBlock& block,
+	const open_vector_format::MarkingParams& params)
+{
+	// 1. Set the process parameters for this specific block
+	m_listHandler.addSetMarkSpeed(params.laser_speed_in_mm_per_s());
+	m_listHandler.addSetFocusOffset(mmToBits(params.laser_focus_shift_in_mm()));
 
-    std::cout << "[GeometryHandler] Processing polyline with " << polyline.size()
-        << " points using mark_abs at " << markSpeed_mm_s << " mm/s." << std::endl;
+	double powerPercent = (params.laser_power_in_w() / MAX_LASER_POWER_W) * 100.0;
+	m_listHandler.addSetLaserPower(1, powerToDAC(powerPercent));
 
-    // --- Step 1: Set parameters that apply to the entire polyline ---
-    m_listHandler.addSetMarkSpeed(markSpeed_mm_s);
-    m_listHandler.addSetLaserPower(1, powerToDAC(laserPowerPercent)); // Port 1 is typical for laser power.
-    m_listHandler.addSetFocusOffset(mmToBits(focusOffset_mm));
+	// 2. Process the geometry based on its type
+	switch (block.vector_data_case()) {
+	case open_vector_format::VectorBlock::kLineSequence: {
+		const auto& points = block.line_sequence().points();
+		if (points.size() < 2) return;
 
-    // --- Step 2: Jump to the starting point of the polyline (laser off) ---
-    const auto& startPoint = polyline.front();
-    m_listHandler.addJumpAbsolute(mmToBits(startPoint.x), mmToBits(startPoint.y));
+		// FIX: Use square brackets [] for element access
+		m_listHandler.addJumpAbsolute(mmToBits(points[0]), mmToBits(points[1]));
+		for (int i = 2; i < points.size(); i += 2) {
+			m_listHandler.addMarkAbsolute(mmToBits(points[i]), mmToBits(points[i + 1]));
+		}
+		break;
+	}
 
-    // --- Step 3: Trace all segments of the polyline (laser on) ---
-    for (size_t i = 1; i < polyline.size(); ++i) {
-        const auto& p = polyline[i];
-        m_listHandler.addMarkAbsolute(mmToBits(p.x), mmToBits(p.y));
-    }
+	case open_vector_format::VectorBlock::kHatches: {
+		// FIX: Use the correct accessor '_hatches()' and square brackets []
+		const auto& points = block._hatches().points();
+		for (int i = 0; i < points.size(); i += 4) {
+			// FIX: Use square brackets [] for element access
+			m_listHandler.addJumpAbsolute(mmToBits(points[i]), mmToBits(points[i + 1]));
+			m_listHandler.addMarkAbsolute(mmToBits(points[i + 2]), mmToBits(points[i + 3]));
+		}
+		break;
+	}
 
-    // The laser is automatically turned off by the RTC6 after this sequence,
-    // because the next command in the list will either be another jump
-    // or the 'set_end_of_list' command.
+	// ToDo: Implement other cases as needed
+	// case open_vector_format::VectorBlock::kPointSequence: { ... }
+	// case open_vector_format::VectorBlock::kArcs: { ... }
+
+	default:
+		// Silently ignore unsupported types for now
+		break;
+	}
 }
 
-// Converts millimeters to RTC6 bits.
+// Private helper methods remain the same
 int GeometryHandler::mmToBits(double mm) const {
-    return static_cast<int>(std::round(mm * BITS_PER_MM));
+	return static_cast<int>(std::round(mm * BITS_PER_MM));
 }
 
-// Converts a 0-100% power value to a 0-4095 DAC value.
 UINT GeometryHandler::powerToDAC(double percent) const {
-    if (percent < 0.0) percent = 0.0;
-    if (percent > 100.0) percent = 100.0;
-    return static_cast<UINT>((percent / 100.0) * 4095.0);
+	if (percent < 0.0) percent = 0.0;
+	if (percent > 100.0) percent = 100.0;
+	return static_cast<UINT>((percent / 100.0) * 4095.0);
 }

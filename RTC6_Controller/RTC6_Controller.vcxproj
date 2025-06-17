@@ -76,11 +76,18 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)libs\gprotobuf;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y "$(SolutionDir)libs\RTC6DLLx64.dll" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6OUT.out" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6RBF.rbf" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6DAT.dat" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -90,11 +97,18 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)libs\gprotobuf;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y "$(SolutionDir)libs\RTC6DLLx64.dll" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6OUT.out" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6RBF.rbf" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6DAT.dat" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -103,7 +117,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)libs\gprotobuf;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/w44365 %(AdditionalOptions)</AdditionalOptions>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -115,10 +129,10 @@
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6DLLx64.dll" "$(OutDir)"
-xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6OUT.out" "$(OutDir)"
-xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6RBF.rbf" "$(OutDir)"
-xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs\RTC6DAT.dat" "$(OutDir)"</Command>
+      <Command>xcopy /y "$(SolutionDir)libs\RTC6DLLx64.dll" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6OUT.out" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6RBF.rbf" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6DAT.dat" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -132,27 +146,35 @@ xcopy /y "C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Contr
       <AdditionalOptions>/w44365 %(AdditionalOptions)</AdditionalOptions>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)libs\gprotobuf;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y "$(SolutionDir)libs\RTC6DLLx64.dll" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6OUT.out" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6RBF.rbf" "$(OutDir)"
+xcopy /y "$(SolutionDir)libs\RTC6DAT.dat" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DisplayUI.cpp" />
     <ClCompile Include="GeometryHandler.cpp" />
     <ClCompile Include="ListHandler.cpp" />
+    <ClCompile Include="OvfParser.cpp" />
     <ClCompile Include="Rtc6Communicator.cpp" />
     <ClCompile Include="RtcApiWrapper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DisplayUI.h" />
-    <ClInclude Include="Geometry.h" />
     <ClInclude Include="GeometryHandler.h" />
     <ClInclude Include="InterfaceCommunicator.h" />
     <ClInclude Include="InterfaceListHandler.h" />
     <ClInclude Include="InterfaceRtcApi.h" />
     <ClInclude Include="ListHandler.h" />
+    <ClInclude Include="OvfParser.h" />
     <ClInclude Include="Rtc6Communicator.h" />
     <ClInclude Include="Rtc6Constants.h" />
     <ClInclude Include="RtcApiWrapper.h" />

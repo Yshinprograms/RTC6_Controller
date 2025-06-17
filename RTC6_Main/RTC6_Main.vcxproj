@@ -22,6 +22,9 @@
     <ClCompile Include="..\RTC6_Controller\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Ovf_Core\Ovf_Core.vcxproj">
+      <Project>{9c32b6c1-d4ef-4bf8-94a7-e6ebda59ea59}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\RTC6_Controller\RTC6_Controller.vcxproj">
       <Project>{92b2bb74-3351-4550-81bb-804054c4b06c}</Project>
     </ProjectReference>
@@ -78,18 +81,30 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ExternalIncludePath>C:\Users\pin20\Downloads\vcpkg\installed\x64-windows\include;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ExternalIncludePath>C:\Users\pin20\Downloads\vcpkg\installed\x64-windows\include;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ExternalIncludePath>C:\Users\pin20\Downloads\vcpkg\installed\x64-windows\include;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ExternalIncludePath>C:\Users\pin20\Downloads\vcpkg\installed\x64-windows\include;$(ExternalIncludePath)</ExternalIncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -101,12 +116,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -116,12 +131,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -133,12 +148,12 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\RTC6_Controller;C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\pin20\Downloads\SIMTech_Internship\RTC6_Controller\RTC6_Controller\libs</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)libs</AdditionalLibraryDirectories>
       <AdditionalDependencies>RTC6DLLx64.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

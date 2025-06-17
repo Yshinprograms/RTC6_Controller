@@ -2,7 +2,7 @@
 #include "gmock/gmock.h"
 #include "GeometryHandler.h"
 #include "InterfaceListHandler.h"
-#include "Geometry.h"
+#include "ProcessData.h"
 
 // A dummy mock to satisfy the constructor. It will never be used.
 class DummyMockListHandler : public InterfaceListHandler {
