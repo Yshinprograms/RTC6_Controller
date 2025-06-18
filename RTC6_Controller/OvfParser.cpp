@@ -75,6 +75,7 @@ bool OvfParser::readAndValidateHeader(int64_t& out_jobLutPos) {
     if (m_file.gcount() != 4 || (magic[0] != 0x4c || magic[1] != 0x56 || magic[2] != 0x46 || magic[3] != 0x21)) {
         return false;
     }
+	//read(&address_to_read_into, sizeof(address_to_read_int));
     m_file.read(reinterpret_cast<char*>(&out_jobLutPos), sizeof(out_jobLutPos));
     return m_file.gcount() == sizeof(out_jobLutPos);
 }

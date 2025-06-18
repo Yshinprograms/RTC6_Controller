@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\RTC6_Controller\main.cpp" />
+    <ClCompile Include="PrintController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ovf_Core\Ovf_Core.vcxproj">
@@ -28,6 +29,9 @@
     <ProjectReference Include="..\RTC6_Controller\RTC6_Controller.vcxproj">
       <Project>{92b2bb74-3351-4550-81bb-804054c4b06c}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PrintController.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -99,7 +103,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Main;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -116,7 +120,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Main;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,7 +135,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Main;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,7 +152,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Main;$(SolutionDir)RTC6_Controller;$(SolutionDir)libs</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
