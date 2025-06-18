@@ -2,30 +2,38 @@
 #include "DisplayUI.h"
 #include "OvfParser.h"
 #include "Rtc6Communicator.h"
+#include "RtcApiWrapper.h"
+#include "ListHandler.h"
+#include "GeometryHandler.h"
 #include <iostream>
 
 int main(int argc, char* argv[]) {
-    // 1. Handle command-line arguments (a robust addition).
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <path_to_ovf_file>" << std::endl;
         return 1;
     }
 
-    // 2. Create the configuration object.
+    // 1. Create the configuration object.
     PrintJobConfig config;
     config.ovfFilePath = argv[1];
     config.recoatingDelayMs = 5000;
 
-    // 3. Create all the long-lived components.
+    // 2. --- COMPOSITION ROOT ---
+    // Create all the long-lived service components here.
     DisplayUI ui;
     OvfParser parser;
     Rtc6Communicator communicator(1); // Assuming board #1
+    RtcApiWrapper rtcApi;             // The handlers depend on the API wrapper.
+
+    // Create the handlers, injecting their dependencies.
+    ListHandler listHandler(communicator, rtcApi);
+    GeometryHandler geoHandler(listHandler);
 
     try {
-        // 4. Create the main controller, injecting all dependencies.
-        PrintController controller(communicator, parser, ui, config);
+        // 3. Create the main controller, injecting ALL 6 dependencies.
+        PrintController controller(communicator, parser, ui, listHandler, geoHandler, config);
 
-        // 5. Run the application.
+        // 4. Run the application.
         controller.run();
     }
     catch (const std::exception& e) {

@@ -10,12 +10,17 @@ ListHandler::ListHandler(InterfaceCommunicator& communicator, InterfaceRtcApi& r
     : m_communicator(communicator),
     m_rtcApi(rtcApi),
     m_currentListIdForFilling(1), // Start by preparing commands for List 1.
-    m_currentListIdForExecution(0)  // No list is executing initially.
+    m_currentListIdForExecution(0),  // No list is executing initially.
+	m_lastExecutedListId(0) // Initialize last executed list ID to 0.
 {
     std::cout << "[ListHandler] Instance created. Default fill target: List 1." << std::endl;
 }
 
 ListHandler::~ListHandler() {}
+
+UINT ListHandler::getLastExecutedListId() const {
+    return m_lastExecutedListId;
+}
 
 // Arms the RTC6's automatic list-switching capability for the first time.
 bool ListHandler::setupAutoChangeMode() {
@@ -68,6 +73,7 @@ bool ListHandler::executeCurrentListAndCycle() {
     std::cout << "[ListHandler] Commanding execution of List " << listToExecute << std::endl;
     std::cout << "  [API CALL] api_execute_list(list_id=" << listToExecute << ")" << std::endl;
     m_rtcApi.api_execute_list(listToExecute);
+    m_lastExecutedListId = m_currentListIdForFilling;
 
     m_currentListIdForExecution = listToExecute;
     switchFillListTarget();
