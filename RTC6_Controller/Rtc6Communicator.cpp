@@ -1,3 +1,4 @@
+#include "MachineConfig.h"
 #include "Rtc6Communicator.h"
 #include "Rtc6Constants.h"
 #include <iostream>
@@ -145,6 +146,7 @@ bool Rtc6Communicator::connectAndSetupBoard() {
     return true;
 }
 
+// Consider loading correction file from MachineConfig if needed
 bool Rtc6Communicator::initializeAndShowBoardInfo() {
     std::cout << "\n[Rtc6Communicator] Initiating full board initialization and diagnostics..." << std::endl;
     if (connectAndSetupBoard()) {

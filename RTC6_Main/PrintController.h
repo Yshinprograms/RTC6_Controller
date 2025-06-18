@@ -36,7 +36,7 @@ private:
     Rtc6Communicator& m_communicator;
     OvfParser& m_parser;
     DisplayUI& m_ui;
-    ListHandler& m_listHandler;         // <-- ADDED
-    GeometryHandler& m_geoHandler;     // <-- ADDED
+    ListHandler& m_listHandler;
+    GeometryHandler& m_geoHandler;
     const PrintJobConfig& m_config;
 };

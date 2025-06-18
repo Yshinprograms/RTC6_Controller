@@ -14,6 +14,8 @@
 #include <chrono>
 #include <stdexcept>
 
+#include "MachineConfig.h"
+
  /**
   * @brief Constructs a new PrintController instance.
   * @param communicator A reference to an initialized Rtc6Communicator for hardware interaction.

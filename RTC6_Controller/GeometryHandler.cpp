@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cmath>
 
+#include "MachineConfig.h"
+
 GeometryHandler::GeometryHandler(InterfaceListHandler& listHandler)
 	: m_listHandler(listHandler) {
 	std::cout << "[GeometryHandler] Instance created." << std::endl;
@@ -43,7 +45,7 @@ void GeometryHandler::processVectorBlock(
 	m_listHandler.addSetMarkSpeed(params.laser_speed_in_mm_per_s());
 	m_listHandler.addSetFocusOffset(mmToBits(params.laser_focus_shift_in_mm()));
 
-	double powerPercent = (params.laser_power_in_w() / MAX_LASER_POWER_W) * 100.0;
+	double powerPercent = (params.laser_power_in_w() / MachineConfig::MAX_LASER_POWER_W) * 100.0;
 	m_listHandler.addSetLaserPower(1, powerToDAC(powerPercent));
 
 	// 2. Process the geometry based on its type
@@ -52,7 +54,6 @@ void GeometryHandler::processVectorBlock(
 		const auto& points = block.line_sequence().points();
 		if (points.size() < 2) return;
 
-		// FIX: Use square brackets [] for element access
 		m_listHandler.addJumpAbsolute(mmToBits(points[0]), mmToBits(points[1]));
 		for (int i = 2; i < points.size(); i += 2) {
 			m_listHandler.addMarkAbsolute(mmToBits(points[i]), mmToBits(points[i + 1]));
@@ -61,10 +62,8 @@ void GeometryHandler::processVectorBlock(
 	}
 
 	case open_vector_format::VectorBlock::kHatches: {
-		// FIX: Use the correct accessor '_hatches()' and square brackets []
 		const auto& points = block._hatches().points();
 		for (int i = 0; i < points.size(); i += 4) {
-			// FIX: Use square brackets [] for element access
 			m_listHandler.addJumpAbsolute(mmToBits(points[i]), mmToBits(points[i + 1]));
 			m_listHandler.addMarkAbsolute(mmToBits(points[i + 2]), mmToBits(points[i + 3]));
 		}
@@ -83,7 +82,7 @@ void GeometryHandler::processVectorBlock(
 
 // Private helper methods remain the same
 int GeometryHandler::mmToBits(double mm) const {
-	return static_cast<int>(std::round(mm * BITS_PER_MM));
+	return static_cast<long>(mm * MachineConfig::MM_TO_BITS_CONVERSION_FACTOR);
 }
 
 UINT GeometryHandler::powerToDAC(double percent) const {

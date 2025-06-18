@@ -1,3 +1,4 @@
+#include "MachineConfig.h"
 #include "PrintController.h"
 #include "DisplayUI.h"
 #include "OvfParser.h"
@@ -15,7 +16,7 @@ int main(int argc, char* argv[]) {
 
     PrintJobConfig config;
     config.ovfFilePath = argv[1];
-    config.recoatingDelayMs = 5000;
+    config.recoatingDelayMs = MachineConfig::RECOATING_DELAY_MS;
 
     DisplayUI ui;
     OvfParser parser;

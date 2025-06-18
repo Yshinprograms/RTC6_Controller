@@ -58,14 +58,13 @@ namespace OvfFileWriter {
             var job = new Job();
             job.JobMetaData = CreateDefaultMetaData();
 
-            // --- THIS IS THE FIX ---
             // We must add at least one set of marking parameters to the map
             // so that the key '0' exists for the vector blocks to look up.
             var defaultParams = new MarkingParams {
-                Name = "Default",
-                LaserPowerInW = 200.0f,
-                LaserSpeedInMmPerS = 1500.0f,
-                JumpSpeedInMmS = 5000.0f
+                Name = "Default Marking Params",
+                LaserPowerInW = 0.0f,
+                LaserSpeedInMmPerS = 100.0f,
+                JumpSpeedInMmS = 500.0f
             };
 
             // Add the new parameter set to the map with key 0.
