@@ -14,8 +14,8 @@ namespace OvfFileWriter {
                     $"number of layers: {args[1]}");
             }
 
-            if (numOfLayers <= 0) {
-                throw new CommandLineHandlerException("Error: Number of layers must be greater than 0.");
+            if (numOfLayers < 0) {
+                throw new CommandLineHandlerException("Error: Number of layers cannot be less than 0.");
             }
 
             return new ParsedArguments(outputFilePath, numOfLayers);

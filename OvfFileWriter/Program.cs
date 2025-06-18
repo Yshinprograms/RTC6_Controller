@@ -1,8 +1,4 @@
-﻿using OpenVectorFormat.OVFReaderWriter;
-using OpenVectorFormat;
-using OvfFileWriter;
-using System;                          
-using System.IO;
+﻿using OvfFileWriter;
 using OvfFileWriter.Exceptions;
 
 // The main entry point for our command-line tool.
