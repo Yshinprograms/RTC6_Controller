@@ -121,7 +121,8 @@ void PrintController::processOvfJob() {
  * @param jobShell The Job object containing the parameter map.
  */
 void PrintController::prepareLayer(const open_vector_format::WorkPlane& workPlane, const open_vector_format::Job& jobShell) {
-    std::cout << "\n[CONTROLLER] Preparing Layer " << workPlane.work_plane_number() << " on List " << m_listHandler.getCurrentFillListId() << "..." << std::endl;
+    std::cout << "\n[CONTROLLER] Preparing Layer " << workPlane.work_plane_number() 
+        << " on List " << m_listHandler.getCurrentFillListId() << "..." << std::endl;
 
     m_listHandler.beginListPreparation();
     for (const auto& block : workPlane.vector_blocks()) {
@@ -166,6 +167,8 @@ void PrintController::waitForPreviousLayer(UINT listId) {
  * @param workPlane The WorkPlane object being executed (used for logging).
  */
 void PrintController::executeLayer(const open_vector_format::WorkPlane& workPlane) {
-    std::cout << "[CONTROLLER] Executing Layer " << workPlane.work_plane_number() << " on List " << m_listHandler.getCurrentFillListId() << "." << std::endl;
+    std::cout << "[CONTROLLER] Executing Layer " 
+        << workPlane.work_plane_number() << " on List " 
+        << m_listHandler.getCurrentFillListId() << "." << std::endl;
     m_listHandler.executeCurrentListAndCycle();
 }
