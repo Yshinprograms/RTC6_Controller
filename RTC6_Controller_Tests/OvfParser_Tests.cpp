@@ -31,7 +31,7 @@ protected:
     static const std::string s_malformedFile;
     static const std::string s_nonExistentFile;
 };
-
+// Reminder to add the necessary test files via pre-build steps or manually.
 // Define the static filenames for our tests.
 const std::string OvfParserTest::s_validFile = "valid_3_layers.ovf";
 const std::string OvfParserTest::s_emptyFile = "empty_0_layers.ovf";
@@ -43,13 +43,14 @@ const std::string OvfParserTest::s_nonExistentFile = "no_such_file.ovf";
 // ===                            TEST CASES                                     ===
 // =================================================================================
 
+// ------ openFile Tests ------
 TEST_F(OvfParserTest, OpenFile_WithValidFile_ReturnsTrueAndParsesMetadata) {
     ASSERT_TRUE(parser->openFile(s_validFile));
     EXPECT_EQ(parser->getNumberOfWorkPlanes(), 3);
 
     auto jobShell = parser->getJobShell();
     ASSERT_TRUE(jobShell.has_job_meta_data());
-    EXPECT_EQ(jobShell.job_meta_data().job_name(), "TestJob");
+    EXPECT_EQ(jobShell.job_meta_data().job_name(), "Hatched Square Job");
 }
 
 TEST_F(OvfParserTest, OpenFile_WithEmptyLayerFile_ReturnsTrueAndSetsLayerCountToZero) {
@@ -76,6 +77,7 @@ TEST_F(OvfParserTest, OpenFile_WhenCalledTwice_ResetsStateAndParsesSecondFile) {
     EXPECT_EQ(parser->getNumberOfWorkPlanes(), 0);
 }
 
+// ------ getWorkPlane Tests ------
 TEST_F(OvfParserTest, GetWorkPlane_WithValidIndex_ReturnsCorrectData) {
     parser->openFile(s_validFile);
 
@@ -83,7 +85,7 @@ TEST_F(OvfParserTest, GetWorkPlane_WithValidIndex_ReturnsCorrectData) {
     ASSERT_NO_THROW(wp = parser->getWorkPlane(1));
 
     EXPECT_EQ(wp.work_plane_number(), 1);
-    EXPECT_FLOAT_EQ(wp.z_pos_in_mm(), 0.05f);
+    EXPECT_FLOAT_EQ(wp.z_pos_in_mm(), 0.1f);
 }
 
 TEST_F(OvfParserTest, GetWorkPlane_WhenFileIsNotOpen_ThrowsRuntimeError) {

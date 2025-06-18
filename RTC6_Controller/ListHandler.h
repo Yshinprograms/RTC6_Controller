@@ -32,6 +32,7 @@ public:
     void addSetFocusOffset(INT offset_bits) override;
     void addSetMarkSpeed(double speed_mm_s) override;
     void addSetLaserPower(UINT port, UINT power) override;
+    UINT getLastExecutedListId() const;
 
 
 private:
@@ -48,4 +49,5 @@ private:
 
     // Private unit conversion for internal use.
     int mmToBits(double mm) const;
+    UINT m_lastExecutedListId;
 };

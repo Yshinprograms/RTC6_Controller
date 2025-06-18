@@ -68,5 +68,8 @@
     <ClInclude Include="OvfParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MachineConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
