@@ -17,6 +17,7 @@
     </ClCompile>
     <ClCompile Include="ListHandler_InteractionTests.cpp" />
     <ClCompile Include="ListHandler_LogicTests.cpp" />
+    <ClCompile Include="OvfParser_Tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
