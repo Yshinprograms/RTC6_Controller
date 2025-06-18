@@ -3,6 +3,7 @@ using OpenVectorFormat;
 using OvfFileWriter;
 using System;                          
 using System.IO;
+using OvfFileWriter.Exceptions;
 
 // The main entry point for our command-line tool.
 public class Program {

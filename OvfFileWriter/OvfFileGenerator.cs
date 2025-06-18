@@ -2,6 +2,7 @@
 using System.IO;
 using OpenVectorFormat;
 using OpenVectorFormat.OVFReaderWriter;
+using OvfFileWriter.Exceptions;
 
 namespace OvfFileWriter {
     internal class OvfFileGenerator {
