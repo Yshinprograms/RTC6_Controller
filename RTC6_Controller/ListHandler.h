@@ -32,7 +32,7 @@ public:
     void addSetFocusOffset(INT offset_bits) override;
     void addSetMarkSpeed(double speed_mm_s) override;
     void addSetLaserPower(UINT port, UINT power) override;
-    UINT getLastExecutedListId() const;
+    UINT getLastExecutedListId() const override;
 
 
 private:

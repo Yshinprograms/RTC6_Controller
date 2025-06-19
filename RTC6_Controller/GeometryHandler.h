@@ -1,5 +1,6 @@
 #pragma once
 
+#include "InterfaceGeometryHandler.h"
 #include "InterfaceListHandler.h"
 #include "open_vector_format.pb.h"
 #include <vector>
@@ -7,7 +8,7 @@
 // Forward declaration for the test class
 class GeometryHandler_LogicTest;
 
-class GeometryHandler {
+class GeometryHandler : public InterfaceGeometryHandler {
 public:
     GeometryHandler(InterfaceListHandler& listHandler);
     ~GeometryHandler();
@@ -17,7 +18,7 @@ public:
     void processVectorBlock(
         const open_vector_format::VectorBlock& block,
         const open_vector_format::MarkingParams& params
-    );
+    ) override;
 
 private:
     // This allows your unit test to access the private helper methods.

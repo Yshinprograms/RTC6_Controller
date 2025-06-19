@@ -1,42 +1,38 @@
 #pragma once
 
-#include <string>
-#include "Rtc6Communicator.h"
-#include "OvfParser.h"
-#include "DisplayUI.h"
-#include "ListHandler.h"
-#include "GeometryHandler.h"
+#include "InterfacePrintController.h"
+#include "InterfaceCommunicator.h"
+#include "InterfaceOvfParser.h"
+#include "InterfaceListHandler.h"
+#include "InterfaceGeometryHandler.h"
+#include "InterfaceUI.h"
 
-struct PrintJobConfig { 
-    std::string ovfFilePath;
-	int recoatingDelayMs;
-};
+#include "PrintJobConfig.h"
 
-class PrintController {
+class PrintController : public InterfacePrintController {
 public:
-    // The constructor now accepts the handlers.
+    // --- Constructor now accepts INTERFACES ---
     PrintController(
-        Rtc6Communicator& communicator,
-        OvfParser& parser,
-        DisplayUI& ui,
-        ListHandler& listHandler,
-        GeometryHandler& geoHandler,
-        const PrintJobConfig& config
-    );
+        InterfaceCommunicator& communicator,
+        InterfaceOvfParser& parser,
+        InterfaceUI& ui,
+        InterfaceListHandler& listHandler,
+        InterfaceGeometryHandler& geoHandler,
+        const PrintJobConfig& config);
 
-    void run();
+    void run() override;
 
 private:
     void processOvfJob();
-
     void prepareLayer(const open_vector_format::WorkPlane& workPlane, const open_vector_format::Job& jobShell);
     void waitForPreviousLayer(UINT listId);
     void executeLayer(const open_vector_format::WorkPlane& workPlane);
 
-    Rtc6Communicator& m_communicator;
-    OvfParser& m_parser;
-    DisplayUI& m_ui;
-    ListHandler& m_listHandler;
-    GeometryHandler& m_geoHandler;
+    // --- Member variables are INTERFACES ---
+    InterfaceCommunicator& m_communicator;
+    InterfaceOvfParser& m_parser;
+    InterfaceUI& m_ui;
+    InterfaceListHandler& m_listHandler;
+    InterfaceGeometryHandler& m_geoHandler;
     const PrintJobConfig& m_config;
 };

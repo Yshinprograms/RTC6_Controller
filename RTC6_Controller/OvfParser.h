@@ -1,5 +1,6 @@
 #pragma once
 
+#include <InterfaceOvfParser.h>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -9,16 +10,16 @@
 #include "open_vector_format.pb.h"
 #include "ovf_lut.pb.h"
 
-class OvfParser {
+class OvfParser : public InterfaceOvfParser{
 public:
     OvfParser();
     ~OvfParser();
 
     // --- Public API ---
-    bool openFile(const std::string& filePath);
-    int getNumberOfWorkPlanes() const;
-    open_vector_format::Job getJobShell() const;
-    open_vector_format::WorkPlane getWorkPlane(int index);
+    bool openFile(const std::string& filePath) override;
+    int getNumberOfWorkPlanes() const override;
+    open_vector_format::Job getJobShell() const override;
+    open_vector_format::WorkPlane getWorkPlane(int index) override;
 
 private:
     // --- Private Helper Methods ---

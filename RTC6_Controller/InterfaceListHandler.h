@@ -26,4 +26,5 @@ public:
     virtual void addSetFocusOffset(INT offset_bits) = 0;
     virtual void addSetMarkSpeed(double speed_mm_s) = 0;
     virtual void addSetLaserPower(UINT port, UINT power) = 0;
+    virtual UINT getLastExecutedListId() const = 0;
 };

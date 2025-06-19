@@ -10,7 +10,7 @@ public:
     Rtc6Communicator(UINT boardId = 1); // Default to board 1
     ~Rtc6Communicator();
 	bool initializeAndShowBoardInfo();
-    bool connectAndSetupBoard();
+    bool connectAndSetupBoard() override;
     void printBoardVersions() const;
     void printBoardSerialNumber() const;
     void checkGlobalErrorStatus() const;

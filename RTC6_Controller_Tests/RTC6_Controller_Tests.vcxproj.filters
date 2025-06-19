@@ -18,7 +18,6 @@
     <ClCompile Include="ListHandler_InteractionTests.cpp" />
     <ClCompile Include="ListHandler_LogicTests.cpp" />
     <ClCompile Include="OvfParser_Tests.cpp" />
-    <ClCompile Include="PrintController_Tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -31,6 +30,9 @@
       <Filter>Mocks</Filter>
     </ClInclude>
     <ClInclude Include="MockCommunicator.h">
+      <Filter>Mocks</Filter>
+    </ClInclude>
+    <ClInclude Include="MockListHandler.h">
       <Filter>Mocks</Filter>
     </ClInclude>
   </ItemGroup>

@@ -16,12 +16,12 @@
     <Filter Include="Interfaces">
       <UniqueIdentifier>{fdbe07e6-611c-406f-bd1c-eed5be96d484}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Constants">
+      <UniqueIdentifier>{ea8c0715-0461-4f20-acf8-992b42d31f36}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Rtc6Communicator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DisplayUI.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ListHandler.cpp">
@@ -39,18 +39,15 @@
     <ClCompile Include="..\RTC6_Main\PrintController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ConsoleUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Rtc6Communicator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DisplayUI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ListHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Rtc6Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GeometryHandler.h">
@@ -71,10 +68,31 @@
     <ClInclude Include="OvfParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MachineConfig.h">
+    <ClInclude Include="..\RTC6_Main\PrintController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\RTC6_Main\PrintController.h">
+    <ClInclude Include="MachineConfig.h">
+      <Filter>Header Files\Constants</Filter>
+    </ClInclude>
+    <ClInclude Include="Rtc6Constants.h">
+      <Filter>Header Files\Constants</Filter>
+    </ClInclude>
+    <ClInclude Include="InterfaceGeometryHandler.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="InterfacePrintController.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="InterfaceOvfParser.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="PrintJobConfig.h">
+      <Filter>Header Files\Constants</Filter>
+    </ClInclude>
+    <ClInclude Include="InterfaceUI.h">
+      <Filter>Interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="ConsoleUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

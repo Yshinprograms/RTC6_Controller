@@ -1,6 +1,6 @@
 #pragma once
 #include "gmock/gmock.h"
-#include "InterfaceCommunicator.h" // The "contract" this mock must fulfill.
+#include "InterfaceCommunicator.h"
 
 /**
  * @class MockCommunicator
@@ -14,13 +14,6 @@
  */
 class MockCommunicator : public InterfaceCommunicator {
 public:
-    // MOCK_METHOD generates a mock implementation for the virtual function
-    // from the InterfaceCommunicator base class.
-    //
-    // Parameters:
-    // 1. Return Type: bool
-    // 2. Method Name: isSuccessfullySetup
-    // 3. Arguments: () - none
-    // 4. Qualifiers: (const, override) - It's a const method and overrides a base class virtual function.
-    MOCK_METHOD(bool, isSuccessfullySetup, (), (const, override));
+	MOCK_METHOD(bool, isSuccessfullySetup, (), (const, override));
+	MOCK_METHOD(bool, connectAndSetupBoard, (), (override));
 };

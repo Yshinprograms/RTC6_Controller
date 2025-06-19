@@ -1,6 +1,6 @@
 #include "MachineConfig.h"
 #include "PrintController.h"
-#include "DisplayUI.h"
+#include "ConsoleUI.h"
 #include "OvfParser.h"
 #include "Rtc6Communicator.h"
 #include "RtcApiWrapper.h"
@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
     config.ovfFilePath = argv[1];
     config.recoatingDelayMs = MachineConfig::RECOATING_DELAY_MS;
 
-    DisplayUI ui;
+    ConsoleUI ui;
     OvfParser parser;
     Rtc6Communicator communicator(1);
     RtcApiWrapper rtcApi;
