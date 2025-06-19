@@ -5,18 +5,30 @@
 #include <stdexcept>
 #include <fstream> 
 
+void CreateTestFile(const std::string& filename, const std::string& content) {
+    std::ofstream file(filename, std::ios::binary);
+    file << content;
+    file.close();
+}
+
 class OvfParserTest : public ::testing::Test {
 protected:
     static void SetUpTestSuite() {
-        // Create a simple malformed file for one specific test case.
-        std::ofstream malformed(s_malformedFile, std::ios::binary);
-        malformed << "THIS IS NOT AN OVF FILE";
-        malformed.close();
+        // Malformed file (fundamentally not an OVF file)
+        CreateTestFile(s_malformedFile, "THIS IS NOT AN OVF FILE");
+
+        // A file that is too short (correct magic, but no pointer)
+        CreateTestFile(s_truncatedHeaderFile, "LVF!"); // Note: 4 bytes, same as "LVF!\x21" is 4 bytes. Let's make it more explicit.
+
+        char magic_only[] = { 0x4c, 0x56, 0x46, 0x21 };
+        std::ofstream truncated(s_truncatedHeaderFile, std::ios::binary);
+        truncated.write(magic_only, sizeof(magic_only));
+        truncated.close();
     }
 
     static void TearDownTestSuite() {
-        // Clean up the one file we created.
         remove(s_malformedFile.c_str());
+        remove(s_truncatedHeaderFile.c_str());
     }
 
     void SetUp() override {
@@ -25,25 +37,23 @@ protected:
 
     std::unique_ptr<OvfParser> parser;
 
-    // These filenames point to the asset files that should be in the output directory.
+    // --- Asset Filenames ---
     static const std::string s_validFile;
     static const std::string s_emptyFile;
-    static const std::string s_malformedFile;
+    static const std::string s_largeFile;
+
     static const std::string s_nonExistentFile;
+    static const std::string s_malformedFile;
+    static const std::string s_truncatedHeaderFile;
 };
-// Reminder to add the necessary test files via pre-build steps or manually.
-// Define the static filenames for our tests.
+
 const std::string OvfParserTest::s_validFile = "valid_3_layers.ovf";
 const std::string OvfParserTest::s_emptyFile = "empty_0_layers.ovf";
-const std::string OvfParserTest::s_malformedFile = "malformed_test.ovf";
+const std::string OvfParserTest::s_largeFile = "large_1000_layers.ovf";
 const std::string OvfParserTest::s_nonExistentFile = "no_such_file.ovf";
+const std::string OvfParserTest::s_malformedFile = "malformed_test.ovf";
+const std::string OvfParserTest::s_truncatedHeaderFile = "truncated_header.ovf";
 
-
-// =================================================================================
-// ===                            TEST CASES                                     ===
-// =================================================================================
-
-// ------ openFile Tests ------
 TEST_F(OvfParserTest, OpenFile_WithValidFile_ReturnsTrueAndParsesMetadata) {
     ASSERT_TRUE(parser->openFile(s_validFile));
     EXPECT_EQ(parser->getNumberOfWorkPlanes(), 3);
@@ -67,52 +77,56 @@ TEST_F(OvfParserTest, OpenFile_WithNonExistentFile_ReturnsFalse) {
 }
 
 TEST_F(OvfParserTest, OpenFile_WhenCalledTwice_ResetsStateAndParsesSecondFile) {
-    // First call with the valid file
     ASSERT_TRUE(parser->openFile(s_validFile));
     ASSERT_EQ(parser->getNumberOfWorkPlanes(), 3);
-
-    // Second call with the empty file
     ASSERT_TRUE(parser->openFile(s_emptyFile));
-    // State should be completely reset.
     EXPECT_EQ(parser->getNumberOfWorkPlanes(), 0);
 }
 
-// ------ getWorkPlane Tests ------
 TEST_F(OvfParserTest, GetWorkPlane_WithValidIndex_ReturnsCorrectData) {
     parser->openFile(s_validFile);
-
     open_vector_format::WorkPlane wp;
     ASSERT_NO_THROW(wp = parser->getWorkPlane(1));
-
     EXPECT_EQ(wp.work_plane_number(), 1);
     EXPECT_FLOAT_EQ(wp.z_pos_in_mm(), 0.1f);
 }
 
 TEST_F(OvfParserTest, GetWorkPlane_WhenFileIsNotOpen_ThrowsRuntimeError) {
-    // Expect that calling getWorkPlane before openFile throws the correct exception.
     EXPECT_THROW(parser->getWorkPlane(0), std::runtime_error);
 }
 
 TEST_F(OvfParserTest, GetWorkPlane_WithInvalidIndex_ThrowsOutOfRange) {
     parser->openFile(s_validFile);
-
-    // Check boundaries: one past the end, and a negative index.
     EXPECT_THROW(parser->getWorkPlane(3), std::out_of_range);
     EXPECT_THROW(parser->getWorkPlane(-1), std::out_of_range);
 }
 
 TEST_F(OvfParserTest, GetWorkPlane_WithRandomAccessOrder_ReturnsCorrectDataForEachLayer) {
     parser->openFile(s_validFile);
-
     open_vector_format::WorkPlane wp;
-
-    // Access layers out of order to stress the file seeking logic.
     ASSERT_NO_THROW(wp = parser->getWorkPlane(2));
     EXPECT_EQ(wp.work_plane_number(), 2);
-
     ASSERT_NO_THROW(wp = parser->getWorkPlane(0));
     EXPECT_EQ(wp.work_plane_number(), 0);
-
     ASSERT_NO_THROW(wp = parser->getWorkPlane(1));
     EXPECT_EQ(wp.work_plane_number(), 1);
+}
+
+TEST_F(OvfParserTest, GetNumberOfWorkPlanes_EmptyFile_ReturnsZero) {
+    parser->openFile(s_emptyFile);
+    EXPECT_EQ(parser->getNumberOfWorkPlanes(), 0);
+}
+
+TEST_F(OvfParserTest, GetNumberOfWorkPlanes_WithValidFile_ReturnsCorrectCount) {
+    parser->openFile(s_validFile);
+    EXPECT_EQ(parser->getNumberOfWorkPlanes(), 3);
+}
+
+TEST_F(OvfParserTest, GetNumberOfWorkPlanes_LargeFile_ReturnsCorrectCount) {
+    parser->openFile(s_largeFile);
+    EXPECT_EQ(parser->getNumberOfWorkPlanes(), 1000);
+}
+
+TEST_F(OvfParserTest, OpenFile_FileWithTruncatedHeader_ReturnsFalse) {
+    EXPECT_FALSE(parser->openFile(s_truncatedHeaderFile));
 }

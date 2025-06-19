@@ -54,7 +54,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)RTC6_Main;$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -67,7 +67,9 @@
 "$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)valid_3_layers.ovf" 3
 
 REM Generate the empty file directly into the test's output directory.
-"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0</Command>
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0
+
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)large_1000_layers.ovf" 1000</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -79,7 +81,7 @@ REM Generate the empty file directly into the test's output directory.
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)RTC6_Main;$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -92,7 +94,9 @@ REM Generate the empty file directly into the test's output directory.
 "$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)valid_3_layers.ovf" 3
 
 REM Generate the empty file directly into the test's output directory.
-"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0</Command>
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0
+
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)large_1000_layers.ovf" 1000</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -103,7 +107,7 @@ REM Generate the empty file directly into the test's output directory.
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)RTC6_Main;$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -118,7 +122,9 @@ REM Generate the empty file directly into the test's output directory.
 "$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)valid_3_layers.ovf" 3
 
 REM Generate the empty file directly into the test's output directory.
-"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0</Command>
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0
+
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)large_1000_layers.ovf" 1000</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -129,7 +135,7 @@ REM Generate the empty file directly into the test's output directory.
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)RTC6_Main;$(SolutionDir)libs;$(SolutionDir)Ovf_Core;$(SolutionDir)RTC6_Controller;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -144,7 +150,9 @@ REM Generate the empty file directly into the test's output directory.
 "$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)valid_3_layers.ovf" 3
 
 REM Generate the empty file directly into the test's output directory.
-"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0</Command>
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)empty_0_layers.ovf" 0
+
+"$(SolutionDir)OvfFileWriter\bin\Debug\net8.0\OvfFileWriter.exe" "$(TargetDir)large_1000_layers.ovf" 1000</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -166,6 +174,7 @@ REM Generate the empty file directly into the test's output directory.
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PrintController_Tests.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

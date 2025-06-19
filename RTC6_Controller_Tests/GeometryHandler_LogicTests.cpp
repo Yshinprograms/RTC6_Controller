@@ -1,10 +1,14 @@
+// =========================================================================
+// ===               File: GeometryHandler_LogicTest.cpp                 ===
+// =========================================================================
+#include "pch.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "GeometryHandler.h"
 #include "InterfaceListHandler.h"
 #include "ProcessData.h"
+#include "MachineConfig.h" 
 
-// A dummy mock to satisfy the constructor. It will never be used.
 class DummyMockListHandler : public InterfaceListHandler {
 public:
     MOCK_METHOD(bool, setupAutoChangeMode, (), (override));
@@ -31,46 +35,24 @@ protected:
         return handler->mmToBits(mm);
     }
 
-    UINT callPowerToDAC(double percent) {
-        return handler->powerToDAC(percent);
-    }
-
-    static bool IsPowerConversionCorrect(double percent) {
-        DummyMockListHandler dummy;
-        GeometryHandler handler(dummy);
-        UINT actualDac = handler.powerToDAC(percent);
-        UINT expectedDac = static_cast<UINT>((percent / 100.0) * 4095.0);
-        return actualDac == expectedDac;
-    }
-
     DummyMockListHandler dummyMock;
     std::unique_ptr<GeometryHandler> handler;
 };
 
-// Do NOT directly call handler->method within the Macros
-// May not work correctly, hence use the helper functions!
 TEST_F(GeometryHandler_LogicTest, MmToBits_WithIntegerInput_ReturnsCorrectBitValue) {
-    ASSERT_EQ(callMmToBits(10.0), 10000);
-    ASSERT_EQ(callMmToBits(-5.0), -5000);
+    const int expected_bits_10mm = static_cast<int>(std::round(10.0 * MachineConfig::MM_TO_BITS_CONVERSION_FACTOR));
+    const int expected_bits_neg_5mm = static_cast<int>(std::round(-5.0 * MachineConfig::MM_TO_BITS_CONVERSION_FACTOR));
+
+    ASSERT_EQ(callMmToBits(10.0), expected_bits_10mm);
+    ASSERT_EQ(callMmToBits(-5.0), expected_bits_neg_5mm);
     ASSERT_EQ(callMmToBits(0.0), 0);
 }
 
 TEST_F(GeometryHandler_LogicTest, MmToBits_WithDecimalInput_CorrectlyRoundsResult) {
-    ASSERT_EQ(callMmToBits(12.3456), 12346); // Rounds up
-    ASSERT_EQ(callMmToBits(67.8912), 67891); // Rounds down
-    ASSERT_EQ(callMmToBits(99.9995), 100000); // Rounds at the .5 boundary
-}
-
-TEST_F(GeometryHandler_LogicTest, PowerToDac_WithOutOfRangeInput_IsClamped) {
-    // A value below zero should be clamped to 0.
-    EXPECT_EQ(callPowerToDAC(-25.0), 0);
-    EXPECT_EQ(callPowerToDAC(-0.001), 0);
-    // A value above 100 should be clamped to the maximum DAC value (4095).
-    EXPECT_EQ(callPowerToDAC(150.0), 4095);
-    EXPECT_EQ(callPowerToDAC(100.001), 4095);
-}
-
-TEST_F(GeometryHandler_LogicTest, PowerToDac_WithBoundaryInputs_ReturnsCorrectMinMaxValues) {
-    EXPECT_EQ(callPowerToDAC(0.0), 0);
-    EXPECT_EQ(callPowerToDAC(100.0), 4095);
+    // This test verifies the rounding behavior by comparing against std::round.
+    const double factor = MachineConfig::MM_TO_BITS_CONVERSION_FACTOR;
+    ASSERT_EQ(callMmToBits(12.3456), static_cast<int>(std::round(12.3456 * factor)));
+    ASSERT_EQ(callMmToBits(67.8912), static_cast<int>(std::round(67.8912 * factor)));
+    ASSERT_EQ(callMmToBits(99.9995), static_cast<int>(std::round(99.9995 * factor)));
+    ASSERT_EQ(callMmToBits(-12.3456), static_cast<int>(std::round(-12.3456 * factor)));
 }

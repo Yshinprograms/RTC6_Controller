@@ -52,7 +52,7 @@ void GeometryHandler::processVectorBlock(
 	switch (block.vector_data_case()) {
 	case open_vector_format::VectorBlock::kLineSequence: {
 		const auto& points = block.line_sequence().points();
-		if (points.size() < 2) return;
+		if (points.size() < 4) return;
 
 		m_listHandler.addJumpAbsolute(mmToBits(points[0]), mmToBits(points[1]));
 		for (int i = 2; i < points.size(); i += 2) {
@@ -63,6 +63,7 @@ void GeometryHandler::processVectorBlock(
 
 	case open_vector_format::VectorBlock::kHatches: {
 		const auto& points = block._hatches().points();
+		if (points.size() < 4) return;
 		for (int i = 0; i < points.size(); i += 4) {
 			m_listHandler.addJumpAbsolute(mmToBits(points[i]), mmToBits(points[i + 1]));
 			m_listHandler.addMarkAbsolute(mmToBits(points[i + 2]), mmToBits(points[i + 3]));
@@ -82,7 +83,7 @@ void GeometryHandler::processVectorBlock(
 
 // Private helper methods remain the same
 int GeometryHandler::mmToBits(double mm) const {
-	return static_cast<long>(mm * MachineConfig::MM_TO_BITS_CONVERSION_FACTOR);
+	return static_cast<int>(std::round(mm * MachineConfig::MM_TO_BITS_CONVERSION_FACTOR));
 }
 
 UINT GeometryHandler::powerToDAC(double percent) const {

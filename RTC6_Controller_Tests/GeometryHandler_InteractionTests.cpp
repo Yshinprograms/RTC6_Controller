@@ -1,9 +1,14 @@
+// =========================================================================
+// ===             File: GeometryHandler_InteractionTest.cpp             ===
+// =========================================================================
 #pragma once
+#include "pch.h"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "GeometryHandler.h"
 #include "InterfaceListHandler.h"
 #include "open_vector_format.pb.h"
+#include "MachineConfig.h"
 #include <cmath>
 
 using ::testing::_;
@@ -11,7 +16,8 @@ using ::testing::InSequence;
 using ::testing::DoubleEq;
 
 MATCHER_P(IsCloseToInt, expected, "") {
-    return std::abs(static_cast<double>(arg) - static_cast<double>(expected)) <= 1.0;
+    *result_listener << "where the value " << arg << " is compared to " << expected;
+    return std::abs(static_cast<double>(arg) - expected) <= 1.0;
 }
 
 class MockListHandler : public InterfaceListHandler {
@@ -39,7 +45,7 @@ protected:
     std::unique_ptr<GeometryHandler> handler;
 };
 
-TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_WithValidLineSequence_CallsListHandlerInCorrectSequence) {
+TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_WithLineSequence_CallsListHandlerWithCorrectValues) {
     // Arrange
     open_vector_format::VectorBlock block;
     auto* line_seq = block.mutable_line_sequence();
@@ -52,33 +58,149 @@ TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_WithValidLineSequence
     params.set_laser_speed_in_mm_per_s(1000.0);
     params.set_laser_focus_shift_in_mm(-2.5);
 
-    const UINT expected_dac_value = 2047;
-    const INT expected_focus_bits = -2500;
+    const double factor = MachineConfig::MM_TO_BITS_CONVERSION_FACTOR;
+    const double power_percent = (params.laser_power_in_w() / MachineConfig::MAX_LASER_POWER_W) * 100.0;
+    const double expected_dac = (power_percent / 100.0) * 4095.0;
+    const double expected_focus_bits = -2.5 * factor;
 
-    // Expect: Parameters can be set in any order.
     EXPECT_CALL(mockListHandler, addSetMarkSpeed(DoubleEq(1000.0)));
-    EXPECT_CALL(mockListHandler, addSetLaserPower(1, IsCloseToInt(expected_dac_value)));
+    EXPECT_CALL(mockListHandler, addSetLaserPower(1, IsCloseToInt(expected_dac)));
     EXPECT_CALL(mockListHandler, addSetFocusOffset(IsCloseToInt(expected_focus_bits)));
 
-    // FIX: Only enforce the order of geometry commands.
     {
         InSequence s;
-        EXPECT_CALL(mockListHandler, addJumpAbsolute(IsCloseToInt(10000), IsCloseToInt(20000)));
-        EXPECT_CALL(mockListHandler, addMarkAbsolute(IsCloseToInt(30000), IsCloseToInt(40000)));
-        EXPECT_CALL(mockListHandler, addMarkAbsolute(IsCloseToInt(50000), IsCloseToInt(60000)));
+        EXPECT_CALL(mockListHandler, addJumpAbsolute(IsCloseToInt(10.0 * factor), IsCloseToInt(20.0 * factor)));
+        EXPECT_CALL(mockListHandler, addMarkAbsolute(IsCloseToInt(30.0 * factor), IsCloseToInt(40.0 * factor)));
+        EXPECT_CALL(mockListHandler, addMarkAbsolute(IsCloseToInt(50.0 * factor), IsCloseToInt(60.0 * factor)));
     }
 
     // Act
     handler->processVectorBlock(block, params);
 }
 
-TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_WithEmptyLineSequence_MakesNoGeometryCalls) {
-    // Arrange
+TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_WithHatches_CallsListHandlerWithCorrectJumpMarkPairs) {
     open_vector_format::VectorBlock block;
-    block.mutable_line_sequence();
+
+    auto* hatches = block.mutable__hatches();
+
+    // Hatch 1: (1,1) -> (10,1)
+    hatches->add_points(1.0f); hatches->add_points(1.0f);
+    hatches->add_points(10.0f); hatches->add_points(1.0f);
+    // Hatch 2: (1,2) -> (10,2)
+    hatches->add_points(1.0f); hatches->add_points(2.0f);
+    hatches->add_points(10.0f); hatches->add_points(2.0f);
+
     open_vector_format::MarkingParams params;
 
-    // Expect
+    const double factor = MachineConfig::MM_TO_BITS_CONVERSION_FACTOR;
+
+    EXPECT_CALL(mockListHandler, addSetMarkSpeed(_));
+    EXPECT_CALL(mockListHandler, addSetLaserPower(_, _));
+    EXPECT_CALL(mockListHandler, addSetFocusOffset(_));
+
+    {
+        InSequence s;
+        // Hatch 1
+        EXPECT_CALL(mockListHandler, addJumpAbsolute(IsCloseToInt(1.0 * factor), IsCloseToInt(1.0 * factor)));
+        EXPECT_CALL(mockListHandler, addMarkAbsolute(IsCloseToInt(10.0 * factor), IsCloseToInt(1.0 * factor)));
+        // Hatch 2
+        EXPECT_CALL(mockListHandler, addJumpAbsolute(IsCloseToInt(1.0 * factor), IsCloseToInt(2.0 * factor)));
+        EXPECT_CALL(mockListHandler, addMarkAbsolute(IsCloseToInt(10.0 * factor), IsCloseToInt(2.0 * factor)));
+    }
+
+    // Act
+    handler->processVectorBlock(block, params);
+}
+
+TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_WithUnsupportedType_SetsParamsButMakesNoGeometryCalls) {
+    // Arrange
+    open_vector_format::VectorBlock block;
+    block.mutable_point_sequence();
+    open_vector_format::MarkingParams params;
+
+    EXPECT_CALL(mockListHandler, addSetMarkSpeed(_)).Times(1);
+    EXPECT_CALL(mockListHandler, addSetLaserPower(_, _)).Times(1);
+    EXPECT_CALL(mockListHandler, addSetFocusOffset(_)).Times(1);
+
+    EXPECT_CALL(mockListHandler, addJumpAbsolute(_, _)).Times(0);
+    EXPECT_CALL(mockListHandler, addMarkAbsolute(_, _)).Times(0);
+
+    // Act
+    handler->processVectorBlock(block, params);
+}
+
+TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_WithSingleLineSegment_MakesOneJumpOneMark) {
+    // Arrange: A simple line from (1,2) to (3,4)
+    open_vector_format::VectorBlock block;
+    auto* line_seq = block.mutable_line_sequence();
+    line_seq->add_points(1.0f); line_seq->add_points(2.0f);
+    line_seq->add_points(3.0f); line_seq->add_points(4.0f);
+    open_vector_format::MarkingParams params;
+    const double factor = MachineConfig::MM_TO_BITS_CONVERSION_FACTOR;
+
+    // Expect: Parameter setting calls, then one jump and one mark.
+    EXPECT_CALL(mockListHandler, addSetMarkSpeed(_));
+    EXPECT_CALL(mockListHandler, addSetLaserPower(_, _));
+    EXPECT_CALL(mockListHandler, addSetFocusOffset(_));
+    {
+        InSequence s;
+        EXPECT_CALL(mockListHandler, addJumpAbsolute(IsCloseToInt(1.0 * factor), IsCloseToInt(2.0 * factor)));
+        EXPECT_CALL(mockListHandler, addMarkAbsolute(IsCloseToInt(3.0 * factor), IsCloseToInt(4.0 * factor)));
+    }
+
+    // Act
+    handler->processVectorBlock(block, params);
+}
+
+TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_WithSingleHatch_MakesOneJumpOneMark) {
+    // Arrange: A single hatch from (5,6) to (7,8)
+    open_vector_format::VectorBlock block;
+    auto* hatches = block.mutable__hatches();
+    hatches->add_points(5.0f); hatches->add_points(6.0f);
+    hatches->add_points(7.0f); hatches->add_points(8.0f);
+    open_vector_format::MarkingParams params;
+    const double factor = MachineConfig::MM_TO_BITS_CONVERSION_FACTOR;
+
+    // Expect: Parameter setting calls, then one jump and one mark.
+    EXPECT_CALL(mockListHandler, addSetMarkSpeed(_));
+    EXPECT_CALL(mockListHandler, addSetLaserPower(_, _));
+    EXPECT_CALL(mockListHandler, addSetFocusOffset(_));
+    {
+        InSequence s;
+        EXPECT_CALL(mockListHandler, addJumpAbsolute(IsCloseToInt(5.0 * factor), IsCloseToInt(6.0 * factor)));
+        EXPECT_CALL(mockListHandler, addMarkAbsolute(IsCloseToInt(7.0 * factor), IsCloseToInt(8.0 * factor)));
+    }
+
+    // Act
+    handler->processVectorBlock(block, params);
+}
+
+TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_WithEmptyVectorData_MakesNoGeometryCalls) {
+    // Arrange: A block with no geometry type set (VECTOR_DATA_NOT_SET)
+    open_vector_format::VectorBlock block;
+    open_vector_format::MarkingParams params;
+
+    // Expect: It should still set the parameters for the block.
+    EXPECT_CALL(mockListHandler, addSetMarkSpeed(_)).Times(1);
+    EXPECT_CALL(mockListHandler, addSetLaserPower(_, _)).Times(1);
+    EXPECT_CALL(mockListHandler, addSetFocusOffset(_)).Times(1);
+
+    // Expect: It should NOT make any geometry calls (jump or mark).
+    EXPECT_CALL(mockListHandler, addJumpAbsolute(_, _)).Times(0);
+    EXPECT_CALL(mockListHandler, addMarkAbsolute(_, _)).Times(0);
+
+    // Act
+    handler->processVectorBlock(block, params);
+}
+
+TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_LineSequenceWithInsufficientPoints_MakesNoGeometryCalls) {
+    // Arrange: A line sequence with only one point (2 floats), which is not enough for a line.
+    open_vector_format::VectorBlock block;
+    auto* line_seq = block.mutable_line_sequence();
+    line_seq->add_points(1.0f); line_seq->add_points(2.0f);
+    open_vector_format::MarkingParams params;
+
+    // Expect: Parameters are set, but no geometry calls are made due to the size guard.
     EXPECT_CALL(mockListHandler, addSetMarkSpeed(_)).Times(1);
     EXPECT_CALL(mockListHandler, addSetLaserPower(_, _)).Times(1);
     EXPECT_CALL(mockListHandler, addSetFocusOffset(_)).Times(1);
@@ -89,26 +211,66 @@ TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_WithEmptyLineSequence
     handler->processVectorBlock(block, params);
 }
 
-TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_WithDecimalCoordinates_CorrectlyConvertsToBits) {
-    // Arrange
+TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_HatchesWithInsufficientPoints_MakesNoGeometryCalls) {
+    // Arrange: Hatches with only one point (2 floats), which is not enough for a hatch.
     open_vector_format::VectorBlock block;
-    auto* line_seq = block.mutable_line_sequence();
-    line_seq->add_points(0.0f);     line_seq->add_points(0.0f);
-    line_seq->add_points(12.345f);  line_seq->add_points(-67.891f);
-
+    auto* hatches = block.mutable__hatches();
+    hatches->add_points(1.0f); hatches->add_points(2.0f);
     open_vector_format::MarkingParams params;
 
-    // Expect: Parameter calls can happen in any order.
-    EXPECT_CALL(mockListHandler, addSetMarkSpeed(_));
-    EXPECT_CALL(mockListHandler, addSetLaserPower(_, _));
-    EXPECT_CALL(mockListHandler, addSetFocusOffset(_));
+    // Expect: Parameters are set, but no geometry calls are made due to the size guard.
+    EXPECT_CALL(mockListHandler, addSetMarkSpeed(_)).Times(1);
+    EXPECT_CALL(mockListHandler, addSetLaserPower(_, _)).Times(1);
+    EXPECT_CALL(mockListHandler, addSetFocusOffset(_)).Times(1);
+    EXPECT_CALL(mockListHandler, addJumpAbsolute(_, _)).Times(0);
+    EXPECT_CALL(mockListHandler, addMarkAbsolute(_, _)).Times(0);
 
-    // FIX: Only enforce the order of geometry commands.
-    {
-        InSequence s;
-        EXPECT_CALL(mockListHandler, addJumpAbsolute(IsCloseToInt(0), IsCloseToInt(0)));
-        EXPECT_CALL(mockListHandler, addMarkAbsolute(IsCloseToInt(12345), IsCloseToInt(-67891)));
-    }
+    // Act
+    handler->processVectorBlock(block, params);
+}
+
+TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_ZeroPowerParameter_CorrectlySetsZeroDac) {
+    // Arrange
+    open_vector_format::VectorBlock block;
+    block.mutable_line_sequence()->add_points(0); // Dummy geometry to trigger processing
+    block.mutable_line_sequence()->add_points(0);
+    block.mutable_line_sequence()->add_points(1);
+    block.mutable_line_sequence()->add_points(1);
+
+    open_vector_format::MarkingParams params;
+    params.set_laser_power_in_w(0.0); // Test the boundary condition of 0W power.
+
+    // Expect: The power setting call should have a DAC value of 0.
+    EXPECT_CALL(mockListHandler, addSetLaserPower(1, IsCloseToInt(0.0)));
+    // We don't care about the other calls for this specific test.
+    EXPECT_CALL(mockListHandler, addSetMarkSpeed(_));
+    EXPECT_CALL(mockListHandler, addSetFocusOffset(_));
+    EXPECT_CALL(mockListHandler, addJumpAbsolute(_, _));
+    EXPECT_CALL(mockListHandler, addMarkAbsolute(_, _));
+
+    // Act
+    handler->processVectorBlock(block, params);
+}
+
+TEST_F(GeometryHandler_InteractionTest, ProcessVectorBlock_MaxPowerParameter_CorrectlySetsMaxDac) {
+    // Arrange
+    open_vector_format::VectorBlock block;
+    block.mutable_line_sequence()->add_points(0); // Dummy geometry
+    block.mutable_line_sequence()->add_points(0);
+    block.mutable_line_sequence()->add_points(1);
+    block.mutable_line_sequence()->add_points(1);
+
+    open_vector_format::MarkingParams params;
+    // Test the boundary condition of exactly maximum power.
+    params.set_laser_power_in_w(MachineConfig::MAX_LASER_POWER_W);
+
+    // Expect: The power setting call should have the max DAC value of 4095.
+    EXPECT_CALL(mockListHandler, addSetLaserPower(1, IsCloseToInt(4095.0)));
+    // We don't care about the other calls for this specific test.
+    EXPECT_CALL(mockListHandler, addSetMarkSpeed(_));
+    EXPECT_CALL(mockListHandler, addSetFocusOffset(_));
+    EXPECT_CALL(mockListHandler, addJumpAbsolute(_, _));
+    EXPECT_CALL(mockListHandler, addMarkAbsolute(_, _));
 
     // Act
     handler->processVectorBlock(block, params);

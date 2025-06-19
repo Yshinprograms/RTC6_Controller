@@ -36,6 +36,9 @@
     <ClCompile Include="OvfParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\RTC6_Main\PrintController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Rtc6Communicator.h">
@@ -69,6 +72,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MachineConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RTC6_Main\PrintController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
