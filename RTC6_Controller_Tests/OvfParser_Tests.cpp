@@ -4,6 +4,7 @@
 #include "open_vector_format.pb.h"
 #include <stdexcept>
 #include <fstream> 
+#include "Rtc6Exception.h"
 
 void CreateTestFile(const std::string& filename, const std::string& content) {
     std::ofstream file(filename, std::ios::binary);
@@ -68,12 +69,12 @@ TEST_F(OvfParserTest, OpenFile_WithEmptyLayerFile_ReturnsTrueAndSetsLayerCountTo
     EXPECT_EQ(parser->getNumberOfWorkPlanes(), 0);
 }
 
-TEST_F(OvfParserTest, OpenFile_WithMalformedFile_ReturnsFalse) {
-    EXPECT_FALSE(parser->openFile(s_malformedFile));
+TEST_F(OvfParserTest, OpenFile_WithMalformedFile_ReturnsFileParseError) {
+    EXPECT_THROW(parser->openFile(s_malformedFile), FileParseError);
 }
 
-TEST_F(OvfParserTest, OpenFile_WithNonExistentFile_ReturnsFalse) {
-    EXPECT_FALSE(parser->openFile(s_nonExistentFile));
+TEST_F(OvfParserTest, OpenFile_WithNonExistentFile_ReturnsFileParseError) {
+	EXPECT_THROW(parser->openFile(s_nonExistentFile), FileParseError);
 }
 
 TEST_F(OvfParserTest, OpenFile_WhenCalledTwice_ResetsStateAndParsesSecondFile) {
@@ -127,6 +128,6 @@ TEST_F(OvfParserTest, GetNumberOfWorkPlanes_LargeFile_ReturnsCorrectCount) {
     EXPECT_EQ(parser->getNumberOfWorkPlanes(), 1000);
 }
 
-TEST_F(OvfParserTest, OpenFile_FileWithTruncatedHeader_ReturnsFalse) {
-    EXPECT_FALSE(parser->openFile(s_truncatedHeaderFile));
+TEST_F(OvfParserTest, OpenFile_FileWithTruncatedHeader_ReturnsFileParseError) {
+	EXPECT_THROW(parser->openFile(s_truncatedHeaderFile), FileParseError);
 }
