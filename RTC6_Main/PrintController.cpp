@@ -1,4 +1,5 @@
 #include "PrintController.h"
+#include "Rtc6Exception.h"
 #include <thread>
 #include <chrono>
 #include <stdexcept>
@@ -78,25 +79,18 @@ void PrintController::prepareLayer(const open_vector_format::WorkPlane& workPlan
 
     m_listHandler.beginListPreparation();
     for (const auto& block : workPlane.vector_blocks()) {
-
-        // --- THIS IS THE FIX ---
-        // Replace the ineffective try-catch block with a proactive find-and-check.
-        // This is the robust way to handle potentially missing keys in a Protobuf map.
         const auto& params_map = jobShell.marking_params_map();
         auto it = params_map.find(block.marking_params_key());
 
         if (it != params_map.end()) {
-            // Key was found, so 'it' is a valid iterator.
-            // it->first is the key, it->second is the MarkingParams value.
             const auto& params = it->second;
             m_geoHandler.processVectorBlock(block, params);
         }
         else {
-            // Key was not found. Log a warning and continue to the next block.
             std::stringstream error_ss;
             error_ss << "Marking params key " << block.marking_params_key()
                 << " not found in JobShell map. Skipping vector block.";
-            m_ui.displayError(error_ss.str());
+            throw ConfigurationError(error_ss.str());
         }
     }
     m_listHandler.endListPreparation();

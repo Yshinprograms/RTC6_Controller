@@ -1,4 +1,5 @@
 #include "OvfParser.h"
+#include "Rtc6Exception.h"
 #include <iostream>
 #include <stdexcept>
 
@@ -24,21 +25,21 @@ bool OvfParser::openFile(const std::string& filePath) {
 
     m_file.open(filePath, std::ios::in | std::ios::binary);
     if (!m_file.is_open()) {
-        return false;
+		throw FileParseError("Could not open file at path: " + filePath);
     }
 
     int64_t jobLutPosition = 0;
-    if (!readAndValidateHeader(jobLutPosition)) return false;
-    if (!parseMasterLut(jobLutPosition)) return false;
-    if (!parseJobShell()) return false;
-    if (!parseAllWorkPlaneLuts()) return false;
+    if (!readAndValidateHeader(jobLutPosition)) throw FileParseError("Invalid or corrupt OVF file header.");
+    if (!parseMasterLut(jobLutPosition)) throw FileParseError("Failed to parse master LUT.");
+    if (!parseJobShell()) throw FileParseError("Failed to parse Jobshell.");
+    if (!parseAllWorkPlaneLuts()) throw FileParseError("Failed to parse one or more workplane LUTs.");
 
     return true;
 }
 
 open_vector_format::WorkPlane OvfParser::getWorkPlane(int index) {
     if (!m_file.is_open()) {
-        throw std::runtime_error("File is not open. Call openFile() first.");
+        throw FileParseError("File is not open. Call openFile() first.");
     }
     if (index < 0 || index >= m_workPlaneLuts.size()) {
         throw std::out_of_range("WorkPlane index is out of range.");
@@ -48,10 +49,10 @@ open_vector_format::WorkPlane OvfParser::getWorkPlane(int index) {
     open_vector_format::WorkPlane work_plane;
 
     if (!parseWorkPlaneShell(wp_lut, &work_plane)) {
-        throw std::runtime_error("Failed to parse WorkPlaneShell for index " + std::to_string(index));
+        throw FileParseError("Failed to parse WorkPlaneShell for index " + std::to_string(index));
     }
     if (!parseVectorBlocks(wp_lut, &work_plane)) {
-        throw std::runtime_error("Failed to parse VectorBlocks for index " + std::to_string(index));
+        throw FileParseError("Failed to parse VectorBlocks for index " + std::to_string(index));
     }
 
     return work_plane;

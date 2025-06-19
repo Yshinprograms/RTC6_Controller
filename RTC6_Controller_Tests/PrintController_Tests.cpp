@@ -2,10 +2,9 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-// The class we are testing
 #include "PrintController.h"
+#include "Rtc6Exception.h"
 
-// The interfaces for all its dependencies
 #include "MockCommunicator.h"
 #include "MockOvfParser.h"
 #include "MockUI.h"
@@ -196,50 +195,27 @@ TEST_F(PrintControllerTest, Run_FileWithZeroLayers_ExitsGracefully) {
     controller->run();
 }
 
-TEST_F(PrintControllerTest, Run_VectorBlockWithMissingParamsKey_LogsWarningAndContinues) {
-    // ARRANGE: Create a scenario where the data contract is broken.
-    // The VectorBlock will request key 0, but the JobShell's map will be empty.
-
-    // Create a new empty job shell for this specific test.
+// RENAMED and REWRITTEN to test the new exception-throwing behavior.
+TEST_F(PrintControllerTest, Run_VectorBlockWithMissingParamsKey_ThrowsConfigurationError) {
     open_vector_format::Job emptyJobShell;
 
-    // Set up the mocks for a single-layer job.
+    EXPECT_CALL(mockCommunicator, connectAndSetupBoard()).WillOnce(Return(true));
+    EXPECT_CALL(mockParser, openFile(_)).WillOnce(Return(true));
     EXPECT_CALL(mockParser, getNumberOfWorkPlanes()).WillRepeatedly(Return(1));
-    EXPECT_CALL(mockParser, getJobShell()).WillRepeatedly(Return(emptyJobShell)); // Return the empty shell
+    EXPECT_CALL(mockParser, getJobShell()).WillRepeatedly(Return(emptyJobShell));
+    EXPECT_CALL(mockParser, getWorkPlane(0)).WillOnce(Return(dummyWorkPlane_0));
     EXPECT_CALL(mockListHandler, getCurrentFillListId()).WillRepeatedly(Return(1));
 
-    InSequence s;
-
-    // Standard successful startup
-    EXPECT_CALL(mockUI, displayMessage("--- Initializing Hardware ---"));
-    EXPECT_CALL(mockCommunicator, connectAndSetupBoard()).WillOnce(Return(true));
-    EXPECT_CALL(mockUI, displayMessage("Hardware successfully initialized."));
-    EXPECT_CALL(mockUI, displayMessage("\n--- Parsing OVF File ---"));
-    EXPECT_CALL(mockParser, openFile(_)).WillOnce(Return(true));
-    EXPECT_CALL(mockUI, displayMessage("Successfully opened and parsed OVF file. Found 1 layer(s) to process."));
-    EXPECT_CALL(mockUI, displayMessage("\n--- Starting Layer Processing ---"));
-
-    // The layer processing begins...
-    EXPECT_CALL(mockParser, getWorkPlane(0)).WillOnce(Return(dummyWorkPlane_0));
-    EXPECT_CALL(mockUI, displayProgress("Preparing geometry on List 1", 0, 1));
+    // The controller should successfully start preparing the layer.
     EXPECT_CALL(mockListHandler, beginListPreparation());
 
-    // ASSERT: The controller MUST catch the error and log it, NOT crash.
-    EXPECT_CALL(mockUI, displayError("Marking params key 0 not found in JobShell map. Skipping vector block."));
+    // We can expect some UI calls, but we don't need to be overly specific
+    // since the main point is to test the exception.
+    EXPECT_CALL(mockUI, displayMessage(_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(mockUI, displayProgress(_, _, _)).Times(::testing::AnyNumber());
 
-    // ASSERT: The controller MUST continue gracefully after the error.
-    EXPECT_CALL(mockListHandler, endListPreparation());
-    EXPECT_CALL(mockUI, displayMessage("Executing Layer 0 on List 1."));
-    EXPECT_CALL(mockListHandler, executeCurrentListAndCycle());
-    EXPECT_CALL(mockListHandler, getLastExecutedListId()).WillOnce(Return(1));
-
-    // Final wait and completion
-    EXPECT_CALL(mockUI, displayMessage("Waiting for previous layer on List 1 to finish..."));
-    EXPECT_CALL(mockListHandler, isListBusy(1)).WillOnce(Return(false));
-    EXPECT_CALL(mockUI, displayMessage("List 1 is now free."));
-    EXPECT_CALL(mockUI, displayMessage("Simulating 100ms for powder bed recoating..."));
-    EXPECT_CALL(mockUI, displayMessage("\n--- All 1 Layers Processed ---"));
-
-    // ACT
-    controller->run();
+    // ACT & ASSERT:
+    // Now, we assert that calling run() under these conditions throws the exact exception we expect.
+    // This is the only assertion this test needs.
+    ASSERT_THROW(controller->run(), ConfigurationError);
 }
