@@ -19,6 +19,9 @@
     <Filter Include="Header Files\Constants">
       <UniqueIdentifier>{ea8c0715-0461-4f20-acf8-992b42d31f36}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Exceptions">
+      <UniqueIdentifier>{32aa1977-af86-4c83-a58a-5765f459104e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Rtc6Communicator.cpp">
@@ -94,6 +97,9 @@
     </ClInclude>
     <ClInclude Include="ConsoleUI.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rtc6Exception.h">
+      <Filter>Header Files\Exceptions</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

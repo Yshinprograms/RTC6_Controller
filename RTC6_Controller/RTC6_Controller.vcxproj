@@ -201,6 +201,7 @@ xcopy /y "$(SolutionDir)libs\RTC6DAT.dat" "$(OutDir)"</Command>
     <ClInclude Include="PrintJobConfig.h" />
     <ClInclude Include="Rtc6Communicator.h" />
     <ClInclude Include="Rtc6Constants.h" />
+    <ClInclude Include="Rtc6Exception.h" />
     <ClInclude Include="RtcApiWrapper.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

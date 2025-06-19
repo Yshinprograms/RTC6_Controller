@@ -1,3 +1,7 @@
+#pragma once
+#include "gmock/gmock.h"
+#include "InterfaceListHandler.h"
+
 class MockListHandler : public InterfaceListHandler {
 public:
     MOCK_METHOD(bool, setupAutoChangeMode, (), (override));

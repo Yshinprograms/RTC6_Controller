@@ -72,19 +72,27 @@ void PrintController::processOvfJob() {
     m_ui.displayMessage("\n--- All " + std::to_string(num_layers) + " Layers Processed ---");
 }
 
-// ... (The rest of your private helper methods can remain exactly the same as they were) ...
-
 void PrintController::prepareLayer(const open_vector_format::WorkPlane& workPlane, const open_vector_format::Job& jobShell) {
     std::string progressMsg = "Preparing geometry on List " + std::to_string(m_listHandler.getCurrentFillListId());
     m_ui.displayProgress(progressMsg, workPlane.work_plane_number(), m_parser.getNumberOfWorkPlanes());
 
     m_listHandler.beginListPreparation();
     for (const auto& block : workPlane.vector_blocks()) {
-        try {
-            const auto& params = jobShell.marking_params_map().at(block.marking_params_key());
+
+        // --- THIS IS THE FIX ---
+        // Replace the ineffective try-catch block with a proactive find-and-check.
+        // This is the robust way to handle potentially missing keys in a Protobuf map.
+        const auto& params_map = jobShell.marking_params_map();
+        auto it = params_map.find(block.marking_params_key());
+
+        if (it != params_map.end()) {
+            // Key was found, so 'it' is a valid iterator.
+            // it->first is the key, it->second is the MarkingParams value.
+            const auto& params = it->second;
             m_geoHandler.processVectorBlock(block, params);
         }
-        catch (const std::out_of_range& e) {
+        else {
+            // Key was not found. Log a warning and continue to the next block.
             std::stringstream error_ss;
             error_ss << "Marking params key " << block.marking_params_key()
                 << " not found in JobShell map. Skipping vector block.";
