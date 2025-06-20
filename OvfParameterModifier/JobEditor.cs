@@ -6,8 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace OvfParameterModifier {
+    /// <summary>
+    /// Encapsulates all business logic for querying and modifying a Job object.
+    /// This class is the single source of truth for the Job data model rules.
+    /// </summary>
     public class JobEditor {
-        // ... (GetMaxLayerIndex and DoesParamSetExist are unchanged)
+        // --- Query Methods ---
         public int GetMaxLayerIndex(Job job) {
             return job.WorkPlanes.Count - 1;
         }
@@ -16,8 +20,12 @@ namespace OvfParameterModifier {
             return job.MarkingParamsMap.ContainsKey(key);
         }
 
+        // --- Modification Methods ---
         public void ApplyParametersToLayerRange(Job job, int startLayer, int endLayer, int paramKey) {
-            // REMOVED: The IsLayerRangeValid check is now handled by the controller.
+            // THE FIX: Ensure the result of the helper method is checked correctly.
+            if (!IsLayerRangeValid(job, startLayer, endLayer)) {
+                throw new ArgumentOutOfRangeException(nameof(startLayer), "Layer range is invalid for this job.");
+            }
             if (!DoesParamSetExist(job, paramKey)) {
                 throw new KeyNotFoundException($"Parameter Set with ID {paramKey} does not exist.");
             }
@@ -30,10 +38,8 @@ namespace OvfParameterModifier {
             }
         }
 
-        // ... (FindOrCreateParameterSetKey is unchanged)
         public int FindOrCreateParameterSetKey(Job job, float power, float speed) {
             var markingParamsMap = job.MarkingParamsMap;
-
             foreach (var entry in markingParamsMap) {
                 if (DoParamsMatch(entry.Value, power, speed)) {
                     return entry.Key;
@@ -51,10 +57,14 @@ namespace OvfParameterModifier {
             return newKey;
         }
 
-        // REMOVED: This private helper is no longer needed here.
-        // private bool IsLayerRangeValid(Job job, int start, int end) { ... }
+        // --- Private Helper Methods ---
+        private bool IsLayerRangeValid(Job job, int start, int end) {
+            if (start > end) return false;
+            if (start < 0) return false;
+            if (end > GetMaxLayerIndex(job)) return false;
+            return true;
+        }
 
-        // ... (GetNextAvailableParamKey, DoParamsMatch, AreFloatsClose are unchanged)
         private int GetNextAvailableParamKey(IDictionary<int, MarkingParams> markingParamsMap) {
             if (markingParamsMap.Keys.Count == 0) {
                 return 1;
@@ -65,7 +75,6 @@ namespace OvfParameterModifier {
         private bool DoParamsMatch(MarkingParams existingParams, float desiredPower, float desiredSpeed) {
             bool powerMatches = AreFloatsClose(existingParams.LaserPowerInW, desiredPower);
             bool speedMatches = AreFloatsClose(existingParams.LaserSpeedInMmPerS, desiredSpeed);
-
             return powerMatches && speedMatches;
         }
 

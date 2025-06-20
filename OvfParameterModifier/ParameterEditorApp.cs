@@ -1,17 +1,17 @@
 ﻿// OvfParameterModifier/ParameterEditorApp.cs
 
+// ... (keep all existing using statements)
+
 using OpenVectorFormat;
 using OpenVectorFormat.OVFReaderWriter;
 using OvfParameterModifier.Exceptions;
-using System;
-using System.IO;
 
 namespace OvfParameterModifier {
     public class ParameterEditorApp(IUserInterface ui, JobEditor editor) {
+        // ... (fields are unchanged)
         private Job _activeJob = null!;
         private string _sourceFilePath = null!;
         private bool _isModified = false;
-
         public void Run() {
             ui.DisplayWelcomeMessage();
             try {
@@ -30,6 +30,7 @@ namespace OvfParameterModifier {
                 try {
                     var choice = ui.GetMainMenuSelection();
                     switch (choice) {
+                        // ... (cases 1, 2, 3 are unchanged)
                         case MainMenuOption.ViewParameterSets:
                             ui.DisplayParameterSets(_activeJob.MarkingParamsMap);
                             ui.WaitForAcknowledgement();
@@ -44,9 +45,13 @@ namespace OvfParameterModifier {
                             DoSaveAndExit();
                             running = false;
                             break;
+                        // New case for quitting
+                        case MainMenuOption.QuitWithoutSaving:
+                            running = !DoQuitWithoutSaving(); // running is false if quit is confirmed
+                            break;
                         default:
                             ui.DisplayMessage("Invalid selection, please try again.", isError: true);
-                            ui.WaitForAcknowledgement(); // Add pause for invalid menu choices too
+                            ui.WaitForAcknowledgement();
                             break;
                     }
                 } catch (UserInputException ex) {
@@ -64,9 +69,9 @@ namespace OvfParameterModifier {
             var choice = ui.GetParameterSourceChoice();
 
             if (choice == ParameterSource.UseExistingId) {
-                keyToUse = ui.GetExistingParameterSetId();
+                // CHANGE: Pass the available keys to the UI method.
+                keyToUse = ui.GetExistingParameterSetId(_activeJob.MarkingParamsMap.Keys);
                 if (!editor.DoesParamSetExist(_activeJob, keyToUse)) {
-                    // CHANGE: Add pause after error
                     ui.DisplayMessage($"Parameter Set with ID {keyToUse} does not exist.", isError: true);
                     ui.WaitForAcknowledgement();
                     return;
@@ -81,7 +86,6 @@ namespace OvfParameterModifier {
             int maxLayer = editor.GetMaxLayerIndex(_activeJob) + 1;
 
             if (startLayer < 1 || endLayer > maxLayer || startLayer > endLayer) {
-                // CHANGE: Add pause after error
                 ui.DisplayMessage($"Invalid layer range. Please enter numbers between 1 and {maxLayer}.", isError: true);
                 ui.WaitForAcknowledgement();
                 return;
@@ -94,12 +98,27 @@ namespace OvfParameterModifier {
             ui.WaitForAcknowledgement();
         }
 
+        // New method to handle the quit logic
+        private bool DoQuitWithoutSaving() {
+            if (_isModified) {
+                if (ui.ConfirmQuitWithoutSaving()) {
+                    ui.DisplayMessage("Exiting without saving changes. Goodbye!");
+                    return true; // Yes, quit
+                }
+                return false; // No, don't quit
+            }
+
+            // If not modified, just exit.
+            ui.DisplayMessage("Exiting application. Goodbye!");
+            return true;
+        }
+
+        // ... (DoVectorBlockEditing, LoadJob, DoSaveAndExit are unchanged)
         private void DoVectorBlockEditing() {
             int layerNumber = ui.GetTargetLayerIndex();
             int maxLayer = editor.GetMaxLayerIndex(_activeJob) + 1;
 
             if (layerNumber < 1 || layerNumber > maxLayer) {
-                // CHANGE: Add pause after error
                 ui.DisplayMessage($"Invalid layer number. Please enter a number between 1 and {maxLayer}.", isError: true);
                 ui.WaitForAcknowledgement();
                 return;
@@ -129,7 +148,6 @@ namespace OvfParameterModifier {
             }
             ui.WaitForAcknowledgement();
         }
-
         private void LoadJob() {
             _sourceFilePath = ui.GetSourceFilePath();
             using (var reader = new OVFFileReader()) {
