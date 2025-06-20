@@ -10,17 +10,17 @@ namespace OvfParameterModifier {
         ApplyToLayerRange = 2,
         EditVectorBlocksInLayer = 3,
         SaveAndExit = 4,
-        QuitWithoutSaving = 5 // New Option
+        DiscardChanges = 5,
+        QuitWithoutSaving = 6
     }
 
-    // ... (ParameterSource enum is unchanged)
     public enum ParameterSource {
         CreateNew,
-        UseExistingId
+        UseExistingId,
+        ReturnToMenu
     }
 
     public interface IUserInterface {
-        // ... (existing methods)
         void DisplayWelcomeMessage();
         void DisplayGoodbyeMessage();
         void DisplayMessage(string message, bool isError = false);
@@ -31,16 +31,12 @@ namespace OvfParameterModifier {
         string GetOutputFilePath(string defaultPath);
         (int start, int end) GetLayerRange();
         ParameterSource GetParameterSourceChoice();
-
-        // CHANGE: Method now accepts the list of available keys.
         int GetExistingParameterSetId(IEnumerable<int> availableKeys);
-
         (float power, float speed) GetDesiredParameters();
         int GetTargetLayerIndex();
         (float power, float speed)? GetVectorBlockParametersOrSkip(int planeNum, int blockNum, int totalBlocks, VectorBlock block);
         void WaitForAcknowledgement();
-
-        // New method for the quit confirmation
         bool ConfirmQuitWithoutSaving();
+        bool ConfirmDiscardChanges();
     }
 }

@@ -1,20 +1,21 @@
 ﻿// OvfParameterModifier/ParameterEditorApp.cs
 
-// ... (keep all existing using statements)
-
 using OpenVectorFormat;
 using OpenVectorFormat.OVFReaderWriter;
 using OvfParameterModifier.Exceptions;
+using System;
+using System.IO;
 
 namespace OvfParameterModifier {
     public class ParameterEditorApp(IUserInterface ui, JobEditor editor) {
-        // ... (fields are unchanged)
         private Job _activeJob = null!;
         private string _sourceFilePath = null!;
         private bool _isModified = false;
+
         public void Run() {
             ui.DisplayWelcomeMessage();
             try {
+                // This is now only called once to get the initial file.
                 LoadJob();
                 MainLoop();
             } catch (Exception ex) {
@@ -23,6 +24,7 @@ namespace OvfParameterModifier {
         }
 
         private void MainLoop() {
+            // ... (MainLoop is unchanged)
             bool running = true;
             while (running) {
                 ui.DisplayDashboard(_sourceFilePath, _activeJob.JobMetaData.JobName, _activeJob.WorkPlanes.Count, _isModified);
@@ -30,7 +32,6 @@ namespace OvfParameterModifier {
                 try {
                     var choice = ui.GetMainMenuSelection();
                     switch (choice) {
-                        // ... (cases 1, 2, 3 are unchanged)
                         case MainMenuOption.ViewParameterSets:
                             ui.DisplayParameterSets(_activeJob.MarkingParamsMap);
                             ui.WaitForAcknowledgement();
@@ -45,9 +46,11 @@ namespace OvfParameterModifier {
                             DoSaveAndExit();
                             running = false;
                             break;
-                        // New case for quitting
+                        case MainMenuOption.DiscardChanges:
+                            DoDiscardChanges();
+                            break;
                         case MainMenuOption.QuitWithoutSaving:
-                            running = !DoQuitWithoutSaving(); // running is false if quit is confirmed
+                            running = !DoQuitWithoutSaving();
                             break;
                         default:
                             ui.DisplayMessage("Invalid selection, please try again.", isError: true);
@@ -64,20 +67,65 @@ namespace OvfParameterModifier {
             }
         }
 
+        private void DoDiscardChanges() {
+            if (!_isModified) {
+                ui.DisplayMessage("No changes to discard.");
+                ui.WaitForAcknowledgement();
+                return;
+            }
+
+            if (ui.ConfirmDiscardChanges()) {
+                try {
+                    // CHANGE: Call the new helper method to reload from the existing path.
+                    ReloadActiveJob();
+                    _isModified = false;
+                    ui.DisplayMessage("All changes have been discarded.");
+                    ui.WaitForAcknowledgement();
+                } catch (Exception ex) {
+                    ui.DisplayMessage($"Failed to reload file: {ex.Message}", isError: true);
+                    ui.WaitForAcknowledgement();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The initial setup method. Gets the file path from the user and performs the first load.
+        /// </summary>
+        private void LoadJob() {
+            _sourceFilePath = ui.GetSourceFilePath();
+            ReloadActiveJob(); // Calls the helper to do the actual loading.
+            ui.DisplayMessage($"Successfully loaded '{_activeJob.JobMetaData.JobName}' with {_activeJob.WorkPlanes.Count} work planes.");
+            ui.WaitForAcknowledgement();
+        }
+
+        /// <summary>
+        /// A new helper method that reloads the job from the stored _sourceFilePath.
+        /// This can be called safely without re-prompting the user.
+        /// </summary>
+        private void ReloadActiveJob() {
+            using (var reader = new OVFFileReader()) {
+                reader.OpenJob(_sourceFilePath);
+                _activeJob = reader.CacheJobToMemory();
+            }
+        }
+
+        // ... (All other methods are unchanged)
         private void DoApplyParametersToRange() {
             int keyToUse;
             var choice = ui.GetParameterSourceChoice();
 
+            if (choice == ParameterSource.ReturnToMenu) {
+                return;
+            }
+
             if (choice == ParameterSource.UseExistingId) {
-                // CHANGE: Pass the available keys to the UI method.
                 keyToUse = ui.GetExistingParameterSetId(_activeJob.MarkingParamsMap.Keys);
                 if (!editor.DoesParamSetExist(_activeJob, keyToUse)) {
                     ui.DisplayMessage($"Parameter Set with ID {keyToUse} does not exist.", isError: true);
                     ui.WaitForAcknowledgement();
                     return;
                 }
-            } else // Create New
-              {
+            } else {
                 var (power, speed) = ui.GetDesiredParameters();
                 keyToUse = editor.FindOrCreateParameterSetKey(_activeJob, power, speed);
             }
@@ -97,23 +145,17 @@ namespace OvfParameterModifier {
             ui.DisplayMessage($"Successfully applied Parameter Set ID {keyToUse} to layers {startLayer}-{endLayer}.");
             ui.WaitForAcknowledgement();
         }
-
-        // New method to handle the quit logic
         private bool DoQuitWithoutSaving() {
             if (_isModified) {
                 if (ui.ConfirmQuitWithoutSaving()) {
                     ui.DisplayMessage("Exiting without saving changes. Goodbye!");
-                    return true; // Yes, quit
+                    return true;
                 }
-                return false; // No, don't quit
+                return false;
             }
-
-            // If not modified, just exit.
             ui.DisplayMessage("Exiting application. Goodbye!");
             return true;
         }
-
-        // ... (DoVectorBlockEditing, LoadJob, DoSaveAndExit are unchanged)
         private void DoVectorBlockEditing() {
             int layerNumber = ui.GetTargetLayerIndex();
             int maxLayer = editor.GetMaxLayerIndex(_activeJob) + 1;
@@ -148,16 +190,6 @@ namespace OvfParameterModifier {
             }
             ui.WaitForAcknowledgement();
         }
-        private void LoadJob() {
-            _sourceFilePath = ui.GetSourceFilePath();
-            using (var reader = new OVFFileReader()) {
-                reader.OpenJob(_sourceFilePath);
-                _activeJob = reader.CacheJobToMemory();
-                ui.DisplayMessage($"Successfully loaded '{_activeJob.JobMetaData.JobName}' with {_activeJob.WorkPlanes.Count} work planes.");
-                ui.WaitForAcknowledgement();
-            }
-        }
-
         private void DoSaveAndExit() {
             string defaultPath = Path.ChangeExtension(_sourceFilePath, ".modified.ovf");
             string outputPath = ui.GetOutputFilePath(defaultPath);
