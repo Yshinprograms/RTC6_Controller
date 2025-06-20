@@ -1,14 +1,10 @@
-﻿// OvfParameterModifier/ParameterEditorApp.cs
-
-// ... (keep existing using statements)
-
-using OpenVectorFormat;
+﻿using OpenVectorFormat;
 using OpenVectorFormat.OVFReaderWriter;
 using OvfParameterModifier.Exceptions;
+using PartArea = OpenVectorFormat.VectorBlock.Types.PartArea; // FIX: Added type alias for the nested enum
 
 namespace OvfParameterModifier {
     public class ParameterEditorApp(IUserInterface ui, JobEditor editor) {
-        // ... (fields are unchanged)
         private Job _activeJob = null!;
         private string _sourceFilePath = null!;
         private bool _isModified = false;
@@ -21,16 +17,13 @@ namespace OvfParameterModifier {
                 ui.DisplayMessage($"A fatal error occurred: {ex.Message}", isError: true);
             }
         }
-
         private void MainLoop() {
             bool running = true;
             while (running) {
                 ui.DisplayDashboard(_sourceFilePath, _activeJob.JobMetaData.JobName, _activeJob.WorkPlanes.Count, _isModified);
-
                 try {
                     var choice = ui.GetMainMenuSelection();
                     switch (choice) {
-                        // ... (cases 1, 2, 3 are unchanged)
                         case MainMenuOption.ViewParameterSets:
                             ui.DisplayParameterSets(_activeJob.MarkingParamsMap);
                             ui.WaitForAcknowledgement();
@@ -38,10 +31,12 @@ namespace OvfParameterModifier {
                         case MainMenuOption.ApplyToLayerRange:
                             DoApplyParametersToRange();
                             break;
+                        case MainMenuOption.ApplyByVectorTypeInLayer:
+                            DoApplyByVectorType();
+                            break;
                         case MainMenuOption.EditVectorBlocksInLayer:
                             DoVectorBlockEditing();
                             break;
-                        // New case
                         case MainMenuOption.ChangeJobName:
                             DoChangeJobName();
                             break;
@@ -69,58 +64,72 @@ namespace OvfParameterModifier {
                 }
             }
         }
-
-        // New method to handle changing the job name
         private void DoChangeJobName() {
             string currentName = _activeJob.JobMetaData?.JobName ?? "Unnamed Job";
             string newName = ui.GetNewJobName(currentName);
-
             if (string.IsNullOrWhiteSpace(newName)) {
                 ui.DisplayMessage("Job name cannot be empty. No change was made.", isError: true);
                 ui.WaitForAcknowledgement();
                 return;
             }
-
             editor.SetJobName(_activeJob, newName);
             _isModified = true;
             ui.DisplayMessage("Job name updated successfully.");
             ui.WaitForAcknowledgement();
         }
-
-        // ... (all other methods are unchanged)
-        private void DoApplyParametersToRange() {
-            int keyToUse;
+        private int? GetParameterKeyFromUser() {
             var choice = ui.GetParameterSourceChoice();
-
             if (choice == ParameterSource.ReturnToMenu) {
-                return;
+                return null;
             }
-
+            int keyToUse;
             if (choice == ParameterSource.UseExistingId) {
                 keyToUse = ui.GetExistingParameterSetId(_activeJob.MarkingParamsMap.Keys);
                 if (!editor.DoesParamSetExist(_activeJob, keyToUse)) {
-                    ui.DisplayMessage($"Parameter Set with ID {keyToUse} does not exist.", isError: true);
-                    ui.WaitForAcknowledgement();
-                    return;
+                    throw new OvfParameterModifierException($"Parameter Set with ID {keyToUse} does not exist.");
                 }
             } else {
                 var (power, speed) = ui.GetDesiredParameters();
                 keyToUse = editor.FindOrCreateParameterSetKey(_activeJob, power, speed);
             }
+            return keyToUse;
+        }
+        private void DoApplyParametersToRange() {
+            int? keyToUse = GetParameterKeyFromUser();
+            if (!keyToUse.HasValue) return;
 
             var (startLayer, endLayer) = ui.GetLayerRange();
             int maxLayer = editor.GetMaxLayerIndex(_activeJob) + 1;
-
             if (startLayer < 1 || endLayer > maxLayer || startLayer > endLayer) {
                 ui.DisplayMessage($"Invalid layer range. Please enter numbers between 1 and {maxLayer}.", isError: true);
                 ui.WaitForAcknowledgement();
                 return;
             }
-
-            editor.ApplyParametersToLayerRange(_activeJob, startLayer - 1, endLayer - 1, keyToUse);
-
+            editor.ApplyParametersToLayerRange(_activeJob, startLayer - 1, endLayer - 1, keyToUse.Value);
             _isModified = true;
             ui.DisplayMessage($"Successfully applied Parameter Set ID {keyToUse} to layers {startLayer}-{endLayer}.");
+            ui.WaitForAcknowledgement();
+        }
+        private void DoApplyByVectorType() {
+            int maxLayer = editor.GetMaxLayerIndex(_activeJob) + 1;
+            if (maxLayer <= 0) {
+                ui.DisplayMessage("This job has no layers to edit.", isError: true);
+                ui.WaitForAcknowledgement();
+                return;
+            }
+            int layerNumber = ui.GetTargetLayerIndex();
+            if (layerNumber < 1 || layerNumber > maxLayer) {
+                ui.DisplayMessage($"Invalid layer number. Please enter a number between 1 and {maxLayer}.", isError: true);
+                ui.WaitForAcknowledgement();
+                return;
+            }
+            PartArea targetArea = ui.GetPartAreaChoice();
+            int? keyToUse = GetParameterKeyFromUser();
+            if (!keyToUse.HasValue) return;
+
+            editor.ApplyParametersToVectorTypeInLayer(_activeJob, layerNumber - 1, targetArea, keyToUse.Value);
+            _isModified = true;
+            ui.DisplayMessage($"Successfully applied Parameter Set ID {keyToUse} to all '{targetArea}' vectors in layer {layerNumber}.");
             ui.WaitForAcknowledgement();
         }
         private void DoDiscardChanges() {
@@ -129,7 +138,6 @@ namespace OvfParameterModifier {
                 ui.WaitForAcknowledgement();
                 return;
             }
-
             if (ui.ConfirmDiscardChanges()) {
                 try {
                     ReloadActiveJob();
@@ -156,21 +164,17 @@ namespace OvfParameterModifier {
         private void DoVectorBlockEditing() {
             int layerNumber = ui.GetTargetLayerIndex();
             int maxLayer = editor.GetMaxLayerIndex(_activeJob) + 1;
-
             if (layerNumber < 1 || layerNumber > maxLayer) {
                 ui.DisplayMessage($"Invalid layer number. Please enter a number between 1 and {maxLayer}.", isError: true);
                 ui.WaitForAcknowledgement();
                 return;
             }
-
             int layerIndex = layerNumber - 1;
             var workPlane = _activeJob.WorkPlanes[layerIndex];
             bool wasAnyBlockModified = false;
-
             for (int i = 0; i < workPlane.VectorBlocks.Count; i++) {
                 var block = workPlane.VectorBlocks[i];
                 var desiredParams = ui.GetVectorBlockParametersOrSkip(layerNumber, i + 1, workPlane.VectorBlocks.Count, block);
-
                 if (desiredParams.HasValue) {
                     var (power, speed) = desiredParams.Value;
                     int keyToUse = editor.FindOrCreateParameterSetKey(_activeJob, power, speed);
@@ -178,7 +182,6 @@ namespace OvfParameterModifier {
                     wasAnyBlockModified = true;
                 }
             }
-
             if (wasAnyBlockModified) {
                 _isModified = true;
                 ui.DisplayMessage($"Changes applied successfully to Layer {layerNumber}.");
@@ -202,7 +205,6 @@ namespace OvfParameterModifier {
         private void DoSaveAndExit() {
             string defaultPath = Path.ChangeExtension(_sourceFilePath, ".modified.ovf");
             string outputPath = ui.GetOutputFilePath(defaultPath);
-
             using (var writer = new OVFFileWriter()) {
                 writer.StartWritePartial(_activeJob, outputPath);
                 foreach (var workPlane in _activeJob.WorkPlanes) {

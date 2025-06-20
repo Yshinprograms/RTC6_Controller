@@ -1,27 +1,24 @@
-﻿// OvfParameterModifier/IUserInterface.cs
-
-using OpenVectorFormat;
+﻿using OpenVectorFormat;
 using System.Collections.Generic;
+using PartArea = OpenVectorFormat.VectorBlock.Types.PartArea;
 
 namespace OvfParameterModifier {
     public enum MainMenuOption {
         Unknown = 0,
         ViewParameterSets = 1,
         ApplyToLayerRange = 2,
-        EditVectorBlocksInLayer = 3,
-        ChangeJobName = 4,         // New Option
-        DiscardChanges = 5,        // Shifted
-        SaveAndExit = 6,           // Shifted
-        QuitWithoutSaving = 7      // Shifted
+        ApplyByVectorTypeInLayer = 3,
+        EditVectorBlocksInLayer = 4,
+        ChangeJobName = 5,
+        DiscardChanges = 6,
+        SaveAndExit = 7,
+        QuitWithoutSaving = 8
     }
-
-    // ... (ParameterSource enum is unchanged)
     public enum ParameterSource {
         CreateNew,
         UseExistingId,
         ReturnToMenu
     }
-
     public interface IUserInterface {
         void DisplayWelcomeMessage();
         void DisplayGoodbyeMessage();
@@ -36,12 +33,11 @@ namespace OvfParameterModifier {
         int GetExistingParameterSetId(IEnumerable<int> availableKeys);
         (float power, float speed) GetDesiredParameters();
         int GetTargetLayerIndex();
+        PartArea GetPartAreaChoice();
         (float power, float speed)? GetVectorBlockParametersOrSkip(int planeNum, int blockNum, int totalBlocks, VectorBlock block);
         void WaitForAcknowledgement();
         bool ConfirmQuitWithoutSaving();
         bool ConfirmDiscardChanges();
-
-        // New method for getting the job name
         string GetNewJobName(string currentName);
     }
 }
