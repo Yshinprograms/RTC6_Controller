@@ -12,9 +12,7 @@ namespace OvfParameterModifier {
     /// Encapsulates the entire logic for the OVF Parameter Modifier tool.
     /// </summary>
     public class ParameterModifier {
-        /// <summary>
-        /// The highest level of abstraction. This method orchestrates the entire application workflow.
-        /// </summary>
+        // --- High-Level Orchestration ---
         public void Run() {
             DisplayWelcomeMessage();
             try {
@@ -34,23 +32,43 @@ namespace OvfParameterModifier {
         // --- Mid-Level Abstraction Methods ---
 
         private void ModifyJobInteractively(Job job) {
-            Console.WriteLine("\nStarting interactive parameter modification...");
+            Console.WriteLine("\nStarting interactive parameter modification on a per-vector-block basis.");
+            Console.WriteLine("For each block, enter new parameters or press Enter to skip and keep the existing ones.");
+
             foreach (var workPlane in job.WorkPlanes) {
-                ProcessWorkPlane(workPlane, job.MarkingParamsMap);
+                ProcessVectorBlocksInWorkPlane(workPlane, job.MarkingParamsMap);
             }
         }
 
-        private void ProcessWorkPlane(WorkPlane workPlane, IDictionary<int, MarkingParams> jobMarkingParams) {
+        /// <summary>
+        /// Manages the iteration over the vector blocks within a single work plane.
+        /// </summary>
+        private void ProcessVectorBlocksInWorkPlane(WorkPlane workPlane, IDictionary<int, MarkingParams> jobMarkingParams) {
             Console.WriteLine($"\n--- Processing WorkPlane Number: {workPlane.WorkPlaneNumber} (Z-Height: {workPlane.ZPosInMm:F3} mm) ---");
+            for (int i = 0; i < workPlane.VectorBlocks.Count; i++) {
+                VectorBlock vectorBlock = workPlane.VectorBlocks[i];
+                ProcessSingleVectorBlock(vectorBlock, workPlane.WorkPlaneNumber, i + 1, workPlane.VectorBlocks.Count, jobMarkingParams);
+            }
+        }
 
-            // Get the desired parameters from the user.
-            var (desiredPower, desiredSpeed) = GetDesiredParametersFromUser();
+        /// <summary>
+        /// Handles the logic for a single vector block: getting user input and updating the block.
+        /// </summary>
+        private void ProcessSingleVectorBlock(VectorBlock block, int planeNum, int blockNum, int totalBlocks, IDictionary<int, MarkingParams> jobMarkingParams) {
+            // Get the desired parameters. This method now returns a nullable tuple to handle the "skip" case.
+            var desiredParams = GetDesiredParametersFromUser(planeNum, blockNum, totalBlocks, block);
 
-            // Find an existing parameter set that matches, or create a new one if none is found.
-            int keyToUse = FindOrCreateParameterSetKey(desiredPower, desiredSpeed, jobMarkingParams);
+            // If the user entered values (did not skip)
+            if (desiredParams.HasValue) {
+                var (power, speed) = desiredParams.Value;
 
-            // Update all vector blocks in this work plane to use the determined key.
-            UpdateVectorBlocksInWorkPlane(workPlane, keyToUse);
+                // Find an existing parameter set that matches, or create a new one.
+                int keyToUse = FindOrCreateParameterSetKey(power, speed, jobMarkingParams);
+
+                // Update this specific vector block to use the determined key.
+                block.MarkingParamsKey = keyToUse;
+            }
+            // If desiredParams is null, the user skipped, so we do nothing.
         }
 
         // --- Low-Level Abstraction Methods ---
@@ -63,40 +81,58 @@ namespace OvfParameterModifier {
         }
 
         private string GetSourceFilePathFromUser() {
+            // ... (This method is unchanged)
             string? filePath = null;
             while (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) {
                 Console.Write("Enter path to the SOURCE OVF file: ");
                 filePath = Console.ReadLine();
                 if (!File.Exists(filePath)) {
-                    Console.WriteLine("ERROR: File not found. Please try again.\n" +
-                        "Ensure that there are no inverted commas wrapping the filepath\n");
+                    Console.WriteLine("ERROR: File not found. Please try again.");
                 }
             }
             return filePath;
         }
 
         private string GetOutputFilePathFromUser() {
+            // ... (This method is unchanged)
             Console.Write("Enter path for the NEW, MODIFIED OVF file: ");
             return Console.ReadLine() ?? "output.ovf";
         }
 
-        private (float power, float speed) GetDesiredParametersFromUser() {
-            Console.Write("  Enter new Laser Power (W): ");
-            float newPower = Convert.ToSingle(Console.ReadLine());
+        /// <summary>
+        /// Prompts the user for parameters for a specific vector block.
+        /// Returns a nullable tuple. If the user skips, returns null.
+        /// </summary>
+        private (float power, float speed)? GetDesiredParametersFromUser(int planeNum, int blockNum, int totalBlocks, VectorBlock block) {
+            Console.WriteLine($"\nEditing Plane {planeNum}, Vector Block {blockNum}/{totalBlocks} (Type: {block.VectorDataCase}, Current Key: {block.MarkingParamsKey})");
+            Console.Write("  Enter new Laser Power (W) or press Enter to skip: ");
+            string powerInput = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(powerInput)) {
+                Console.WriteLine("  -> Skipped.");
+                return null;
+            }
 
             Console.Write("  Enter new Marking Speed (mm/s): ");
-            float newSpeed = Convert.ToSingle(Console.ReadLine());
+            string speedInput = Console.ReadLine();
 
-            return (newPower, newSpeed);
+            if (float.TryParse(powerInput, out float power) && float.TryParse(speedInput, out float speed)) {
+                return (power, speed);
+            }
+
+            Console.WriteLine("  -> Invalid input. Skipping block.");
+            return null;
         }
 
         private void DisplaySuccessMessage() {
+            // ... (This method is unchanged)
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("\nOperation completed successfully!");
             Console.ResetColor();
         }
 
         private void DisplayErrorMessage(Exception ex) {
+            // ... (This method is unchanged)
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"\n[FATAL ERROR] An unexpected error occurred: {ex.Message}");
             if (ex.InnerException != null) {
@@ -105,48 +141,12 @@ namespace OvfParameterModifier {
             Console.ResetColor();
         }
 
-        /// <summary>
-        /// Searches the job's parameter map for a set matching the desired values.
-        /// If a match is found, its key is returned. Otherwise, a new parameter set
-        /// is created, added to the map, and its new key is returned.
-        /// </summary>
-        /// <param name="power">Desired laser power in Watts.</param>
-        /// <param name="speed">Desired marking speed in mm/s.</param>
-        /// <param name="markingParamsMap">The job's central map of marking parameters.</param>
-        /// <returns>The key of the matching or newly created parameter set.</returns>
-        private int FindOrCreateParameterSetKey(float power, float speed, IDictionary<int, MarkingParams> markingParamsMap) {
-            // A small tolerance for comparing floating-point numbers.
-            const float tolerance = 0.001f;
-
-            // 1. Search for an existing match.
-            foreach (var entry in markingParamsMap) {
-                bool powerMatches = Math.Abs(entry.Value.LaserPowerInW - power) < tolerance;
-                bool speedMatches = Math.Abs(entry.Value.LaserSpeedInMmPerS - speed) < tolerance;
-
-                if (powerMatches && speedMatches) {
-                    Console.WriteLine($" -> Found matching Parameter Set. Reusing ID: {entry.Key}");
-                    return entry.Key; // Match found, return its key.
-                }
-            }
-
-            // 2. If the loop completes, no match was found. Create a new one.
-            Console.WriteLine(" -> No existing match found. Creating a new Parameter Set...");
-            var newParams = new MarkingParams {
-                LaserPowerInW = power,
-                LaserSpeedInMmPerS = speed,
-                Name = $"P{power}W_S{speed}mmps" // A more generic name
-            };
-
-            // Reuse our existing method to add it and get the new key.
-            int newKey = AddNewParametersToJob(newParams, markingParamsMap);
-            Console.WriteLine($" -> Created new Parameter Set with ID: {newKey}");
-            return newKey;
-        }
         #endregion
 
         #region File and Data Manipulation
 
         private Job LoadOvfJob(string path) {
+            // ... (This method is unchanged)
             try {
                 Console.WriteLine("\nReading and caching source file...");
                 using (var reader = new OVFFileReader()) {
@@ -161,34 +161,47 @@ namespace OvfParameterModifier {
         }
 
         private void SaveOvfJob(string path, Job job) {
+            // ... (This method is unchanged)
             try {
                 Console.WriteLine("\nWriting modified job to new file...");
-                // The 'using' statement ensures that writer.Dispose() is called automatically
-                // at the end, which is crucial for finalizing the file.
                 using (var writer = new OVFFileWriter()) {
-                    // 1. Initialize the file for writing.
                     writer.StartWritePartial(job, path);
-
-                    // 2. Loop through our in-memory work planes and append them one by one.
                     foreach (var workPlane in job.WorkPlanes) {
                         writer.AppendWorkPlane(workPlane);
                     }
-                } // 3. writer.Dispose() is automatically called here, finalizing the file write.
+                }
             } catch (Exception ex) {
                 throw new OvfParameterModifierException($"Failed to write the OVF file to '{path}'.", ex);
             }
         }
 
-        private int AddNewParametersToJob(MarkingParams newParams, IDictionary<int, MarkingParams> markingParamsMap) {
-            int newKey = (markingParamsMap.Keys.Count == 0) ? 1 : markingParamsMap.Keys.Max() + 1;
-            markingParamsMap.Add(newKey, newParams);
+        private int FindOrCreateParameterSetKey(float power, float speed, IDictionary<int, MarkingParams> markingParamsMap) {
+            // ... (This method is unchanged and still perfectly reusable)
+            const float tolerance = 0.001f;
+            foreach (var entry in markingParamsMap) {
+                bool powerMatches = Math.Abs(entry.Value.LaserPowerInW - power) < tolerance;
+                bool speedMatches = Math.Abs(entry.Value.LaserSpeedInMmPerS - speed) < tolerance;
+                if (powerMatches && speedMatches) {
+                    Console.WriteLine($"  -> Found matching Parameter Set. Reusing ID: {entry.Key}");
+                    return entry.Key;
+                }
+            }
+            Console.WriteLine("  -> No existing match found. Creating a new Parameter Set...");
+            var newParams = new MarkingParams {
+                LaserPowerInW = power,
+                LaserSpeedInMmPerS = speed,
+                Name = $"P{power}W_S{speed}mmps"
+            };
+            int newKey = AddNewParametersToJob(newParams, markingParamsMap);
+            Console.WriteLine($"  -> Created new Parameter Set with ID: {newKey}");
             return newKey;
         }
 
-        private void UpdateVectorBlocksInWorkPlane(WorkPlane workPlane, int newKey) {
-            foreach (var vectorBlock in workPlane.VectorBlocks) {
-                vectorBlock.MarkingParamsKey = newKey;
-            }
+        private int AddNewParametersToJob(MarkingParams newParams, IDictionary<int, MarkingParams> markingParamsMap) {
+            // ... (This method is unchanged)
+            int newKey = (markingParamsMap.Keys.Count == 0) ? 1 : markingParamsMap.Keys.Max() + 1;
+            markingParamsMap.Add(newKey, newParams);
+            return newKey;
         }
 
         #endregion
