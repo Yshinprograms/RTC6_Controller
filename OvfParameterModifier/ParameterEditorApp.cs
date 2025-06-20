@@ -1,17 +1,17 @@
 ﻿// OvfParameterModifier/ParameterEditorApp.cs
 
-// ... (no change to using statements)
-
 using OpenVectorFormat;
 using OpenVectorFormat.OVFReaderWriter;
 using OvfParameterModifier.Exceptions;
+using System;
+using System.IO;
 
 namespace OvfParameterModifier {
     public class ParameterEditorApp(IUserInterface ui, JobEditor editor) {
-        // ... (no changes to fields or Run/MainLoop methods)
         private Job _activeJob = null!;
         private string _sourceFilePath = null!;
         private bool _isModified = false;
+
         public void Run() {
             ui.DisplayWelcomeMessage();
             try {
@@ -46,12 +46,15 @@ namespace OvfParameterModifier {
                             break;
                         default:
                             ui.DisplayMessage("Invalid selection, please try again.", isError: true);
+                            ui.WaitForAcknowledgement(); // Add pause for invalid menu choices too
                             break;
                     }
                 } catch (UserInputException ex) {
                     ui.DisplayMessage(ex.Message, isError: true);
+                    ui.WaitForAcknowledgement();
                 } catch (Exception ex) {
                     ui.DisplayMessage(ex.Message, isError: true);
+                    ui.WaitForAcknowledgement();
                 }
             }
         }
@@ -63,7 +66,9 @@ namespace OvfParameterModifier {
             if (choice == ParameterSource.UseExistingId) {
                 keyToUse = ui.GetExistingParameterSetId();
                 if (!editor.DoesParamSetExist(_activeJob, keyToUse)) {
+                    // CHANGE: Add pause after error
                     ui.DisplayMessage($"Parameter Set with ID {keyToUse} does not exist.", isError: true);
+                    ui.WaitForAcknowledgement();
                     return;
                 }
             } else // Create New
@@ -75,9 +80,10 @@ namespace OvfParameterModifier {
             var (startLayer, endLayer) = ui.GetLayerRange();
             int maxLayer = editor.GetMaxLayerIndex(_activeJob) + 1;
 
-            // CHANGE: Add explicit validation in the controller.
             if (startLayer < 1 || endLayer > maxLayer || startLayer > endLayer) {
+                // CHANGE: Add pause after error
                 ui.DisplayMessage($"Invalid layer range. Please enter numbers between 1 and {maxLayer}.", isError: true);
+                ui.WaitForAcknowledgement();
                 return;
             }
 
@@ -85,19 +91,21 @@ namespace OvfParameterModifier {
 
             _isModified = true;
             ui.DisplayMessage($"Successfully applied Parameter Set ID {keyToUse} to layers {startLayer}-{endLayer}.");
+            ui.WaitForAcknowledgement();
         }
 
         private void DoVectorBlockEditing() {
             int layerNumber = ui.GetTargetLayerIndex();
-            int layerIndex = layerNumber - 1;
             int maxLayer = editor.GetMaxLayerIndex(_activeJob) + 1;
 
-            // CHANGE: Add explicit validation in the controller.
             if (layerNumber < 1 || layerNumber > maxLayer) {
+                // CHANGE: Add pause after error
                 ui.DisplayMessage($"Invalid layer number. Please enter a number between 1 and {maxLayer}.", isError: true);
+                ui.WaitForAcknowledgement();
                 return;
             }
 
+            int layerIndex = layerNumber - 1;
             var workPlane = _activeJob.WorkPlanes[layerIndex];
             bool wasAnyBlockModified = false;
 
@@ -113,7 +121,6 @@ namespace OvfParameterModifier {
                 }
             }
 
-            // CHANGE: Provide more specific feedback after the operation.
             if (wasAnyBlockModified) {
                 _isModified = true;
                 ui.DisplayMessage($"Changes applied successfully to Layer {layerNumber}.");
@@ -123,13 +130,13 @@ namespace OvfParameterModifier {
             ui.WaitForAcknowledgement();
         }
 
-        // ... (LoadJob and DoSaveAndExit are unchanged)
         private void LoadJob() {
             _sourceFilePath = ui.GetSourceFilePath();
             using (var reader = new OVFFileReader()) {
                 reader.OpenJob(_sourceFilePath);
                 _activeJob = reader.CacheJobToMemory();
                 ui.DisplayMessage($"Successfully loaded '{_activeJob.JobMetaData.JobName}' with {_activeJob.WorkPlanes.Count} work planes.");
+                ui.WaitForAcknowledgement();
             }
         }
 
