@@ -9,11 +9,13 @@ namespace OvfParameterModifier {
         ViewParameterSets = 1,
         ApplyToLayerRange = 2,
         EditVectorBlocksInLayer = 3,
-        SaveAndExit = 4,
-        DiscardChanges = 5,
-        QuitWithoutSaving = 6
+        ChangeJobName = 4,         // New Option
+        DiscardChanges = 5,        // Shifted
+        SaveAndExit = 6,           // Shifted
+        QuitWithoutSaving = 7      // Shifted
     }
 
+    // ... (ParameterSource enum is unchanged)
     public enum ParameterSource {
         CreateNew,
         UseExistingId,
@@ -38,5 +40,8 @@ namespace OvfParameterModifier {
         void WaitForAcknowledgement();
         bool ConfirmQuitWithoutSaving();
         bool ConfirmDiscardChanges();
+
+        // New method for getting the job name
+        string GetNewJobName(string currentName);
     }
 }

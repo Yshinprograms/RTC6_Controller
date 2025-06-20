@@ -1,17 +1,12 @@
 ﻿// OvfParameterModifier/JobEditor.cs
 
+// ... (keep existing using statements)
+
 using OpenVectorFormat;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace OvfParameterModifier {
-    /// <summary>
-    /// Encapsulates all business logic for querying and modifying a Job object.
-    /// This class is the single source of truth for the Job data model rules.
-    /// </summary>
     public class JobEditor {
-        // --- Query Methods ---
+        // ... (all existing methods are unchanged)
         public int GetMaxLayerIndex(Job job) {
             return job.WorkPlanes.Count - 1;
         }
@@ -19,10 +14,7 @@ namespace OvfParameterModifier {
         public bool DoesParamSetExist(Job job, int key) {
             return job.MarkingParamsMap.ContainsKey(key);
         }
-
-        // --- Modification Methods ---
         public void ApplyParametersToLayerRange(Job job, int startLayer, int endLayer, int paramKey) {
-            // THE FIX: Ensure the result of the helper method is checked correctly.
             if (!IsLayerRangeValid(job, startLayer, endLayer)) {
                 throw new ArgumentOutOfRangeException(nameof(startLayer), "Layer range is invalid for this job.");
             }
@@ -57,7 +49,15 @@ namespace OvfParameterModifier {
             return newKey;
         }
 
-        // --- Private Helper Methods ---
+        // New method for setting the job name
+        public void SetJobName(Job job, string newName) {
+            // Defensively ensure the metadata object exists.
+            if (job.JobMetaData == null) {
+                job.JobMetaData = new Job.Types.JobMetaData();
+            }
+            job.JobMetaData.JobName = newName;
+        }
+
         private bool IsLayerRangeValid(Job job, int start, int end) {
             if (start > end) return false;
             if (start < 0) return false;

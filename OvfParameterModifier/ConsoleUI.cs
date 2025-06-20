@@ -1,14 +1,37 @@
 ﻿// OvfParameterModifier/ConsoleUI.cs
 
+// ... (keep existing using statements)
 using OpenVectorFormat;
 using OvfParameterModifier.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace OvfParameterModifier {
     public class ConsoleUI : IUserInterface {
+        public MainMenuOption GetMainMenuSelection() {
+            Console.WriteLine("\n--- Main Menu ---");
+            Console.WriteLine("1. View existing Parameter Sets");
+            Console.WriteLine("2. Apply Parameters to a Layer Range");
+            Console.WriteLine("3. Edit Individual Vector Blocks in a Layer");
+            Console.WriteLine("4. Change Job Name"); // New text
+            Console.WriteLine("5. Discard All Changes");
+            Console.WriteLine("6. Save and Exit");
+            Console.WriteLine("7. Quit Without Saving");
+            Console.Write("Select an option: ");
+
+            string input = Console.ReadLine() ?? "";
+            if (int.TryParse(input, out int choice) && Enum.IsDefined(typeof(MainMenuOption), choice)) {
+                return (MainMenuOption)choice;
+            }
+            return MainMenuOption.Unknown;
+        }
+
+        // New method implementation
+        public string GetNewJobName(string currentName) {
+            Console.Write($"\nEnter new job name (current: '{currentName}'): ");
+            return Console.ReadLine() ?? "";
+        }
+
+        // ... (All other methods remain exactly the same)
         public void DisplayWelcomeMessage() {
             Console.WriteLine("OVF Interactive Parameter Editor");
             Console.WriteLine("==============================");
@@ -20,6 +43,26 @@ namespace OvfParameterModifier {
             Console.ResetColor();
         }
 
+        public ParameterSource GetParameterSourceChoice() {
+            Console.WriteLine("\nHow do you want to specify the parameters?");
+            Console.WriteLine("  1. Create New (by entering Power and Speed)");
+            Console.WriteLine("  2. Use Existing (by entering a Parameter Set ID)");
+            Console.WriteLine("  3. Return to Main Menu");
+            Console.Write("Select an option: ");
+
+            string input = Console.ReadLine() ?? "";
+            switch (input) {
+                case "2": return ParameterSource.UseExistingId;
+                case "3": return ParameterSource.ReturnToMenu;
+                default: return ParameterSource.CreateNew;
+            }
+        }
+
+        public int GetExistingParameterSetId(IEnumerable<int> availableKeys) {
+            string keyList = string.Join(", ", availableKeys.OrderBy(k => k));
+            Console.WriteLine($"(Available IDs: {keyList})");
+            return GetIntegerInput("Enter the ID of the existing Parameter Set to apply: ");
+        }
         public void DisplayDashboard(string filePath, string jobName, int layerCount, bool isModified) {
             Console.Clear();
             Console.WriteLine("================================================================");
@@ -38,24 +81,6 @@ namespace OvfParameterModifier {
             Console.ResetColor();
             Console.WriteLine("================================================================");
         }
-
-        public MainMenuOption GetMainMenuSelection() {
-            Console.WriteLine("\n--- Main Menu ---");
-            Console.WriteLine("1. View existing Parameter Sets");
-            Console.WriteLine("2. Apply Parameters to a Layer Range");
-            Console.WriteLine("3. Edit Individual Vector Blocks in a Layer");
-            Console.WriteLine("4. Save and Exit");
-            Console.WriteLine("5. Discard All Changes");
-            Console.WriteLine("6. Quit Without Saving");
-            Console.Write("Select an option: ");
-
-            string input = Console.ReadLine() ?? "";
-            if (int.TryParse(input, out int choice) && Enum.IsDefined(typeof(MainMenuOption), choice)) {
-                return (MainMenuOption)choice;
-            }
-            return MainMenuOption.Unknown;
-        }
-
         public string GetSourceFilePath() {
             string? filePath = null;
             while (string.IsNullOrEmpty(filePath) || !File.Exists(filePath)) {
@@ -86,27 +111,6 @@ namespace OvfParameterModifier {
             }
         }
 
-        public ParameterSource GetParameterSourceChoice() {
-            Console.WriteLine("\nHow do you want to specify the parameters?");
-            Console.WriteLine("  1. Create New (by entering Power and Speed)");
-            Console.WriteLine("  2. Use Existing (by entering a Parameter Set ID)");
-            Console.WriteLine("  3. Return to Main Menu");
-            Console.Write("Select an option: ");
-
-            string input = Console.ReadLine() ?? "";
-            switch (input) {
-                case "2": return ParameterSource.UseExistingId;
-                case "3": return ParameterSource.ReturnToMenu;
-                default: return ParameterSource.CreateNew;
-            }
-        }
-
-        public int GetExistingParameterSetId(IEnumerable<int> availableKeys) {
-            string keyList = string.Join(", ", availableKeys.OrderBy(k => k));
-            Console.WriteLine($"(Available IDs: {keyList})");
-            return GetIntegerInput("Enter the ID of the existing Parameter Set to apply: ");
-        }
-
         public (int start, int end) GetLayerRange() {
             Console.WriteLine("\nEnter the layer range to modify (e.g., 1, 2, 3...).");
             int start = GetIntegerInput("  Start Layer: ");
@@ -128,7 +132,6 @@ namespace OvfParameterModifier {
         public int GetTargetLayerIndex() {
             return GetIntegerInput("\nEnter the Layer number (e.g., 1, 2, 3...) you wish to edit: ");
         }
-
         public (float power, float speed)? GetVectorBlockParametersOrSkip(int planeNum, int blockNum, int totalBlocks, VectorBlock block) {
             Console.WriteLine($"\nEditing Plane {planeNum}, Vector Block {blockNum}/{totalBlocks} (Type: {block.VectorDataCase}, Current Key: {block.MarkingParamsKey})");
             Console.Write("  Enter new Laser Power (W) [Press Enter to skip this block]: ");
@@ -151,7 +154,6 @@ namespace OvfParameterModifier {
             DisplayMessage("Invalid or incomplete input. Skipping block.", isError: true);
             return null;
         }
-
         public int GetIntegerInput(string prompt) {
             Console.Write(prompt);
             if (!int.TryParse(Console.ReadLine() ?? "", out int result)) {
@@ -179,18 +181,15 @@ namespace OvfParameterModifier {
                 Console.ResetColor();
             }
         }
-
         public void WaitForAcknowledgement() {
             Console.WriteLine("\nPress Enter to return to the Main Menu...");
             Console.ReadLine();
         }
-
         public bool ConfirmQuitWithoutSaving() {
             Console.Write("\nYou have unsaved changes. Are you sure you want to quit? (y/n): ");
             string input = Console.ReadLine()?.ToLower() ?? "";
             return input == "y";
         }
-
         public bool ConfirmDiscardChanges() {
             Console.Write("\nYou have unsaved changes. Are you sure you want to discard them? This cannot be undone. (y/n): ");
             string input = Console.ReadLine()?.ToLower() ?? "";
