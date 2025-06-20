@@ -40,6 +40,9 @@ namespace OvfParameterModifier {
                         case MainMenuOption.ApplyToLayerRange:
                             DoApplyParametersToRange();
                             break;
+                        case MainMenuOption.EditVectorBlocksInLayer:
+                            DoVectorBlockEditing();
+                            break;
                         case MainMenuOption.SaveAndExit:
                             DoSaveAndExit();
                             running = false;
@@ -64,6 +67,30 @@ namespace OvfParameterModifier {
             ui.DisplayMessage($"Successfully applied Parameter Set ID {keyToUse} to layers {start}-{end}.");
         }
 
+        private void DoVectorBlockEditing() {
+            int layerIndex = ui.GetTargetLayerIndex();
+
+            // Validate the requested layer index
+            if (layerIndex < 0 || layerIndex >= _activeJob.WorkPlanes.Count) {
+                ui.DisplayMessage($"Invalid layer index. Please enter a number between 0 and {_activeJob.WorkPlanes.Count - 1}.", isError: true);
+                return;
+            }
+
+            var workPlane = _activeJob.WorkPlanes[layerIndex];
+
+            for (int i = 0; i < workPlane.VectorBlocks.Count; i++) {
+                var block = workPlane.VectorBlocks[i];
+                var desiredParams = ui.GetVectorBlockParametersOrSkip(layerIndex, i + 1, workPlane.VectorBlocks.Count, block);
+
+                if (desiredParams.HasValue) {
+                    var (power, speed) = desiredParams.Value;
+                    int keyToUse = editor.FindOrCreateParameterSetKey(_activeJob, power, speed);
+                    block.MarkingParamsKey = keyToUse;
+                }
+            }
+            ui.DisplayMessage($"Finished editing Layer {layerIndex}.");
+        }
+
         private void LoadJob() {
             _sourceFilePath = ui.GetSourceFilePath();
             using (var reader = new OVFFileReader()) {
@@ -74,10 +101,12 @@ namespace OvfParameterModifier {
         }
 
         private void DoSaveAndExit() {
+            // Use the stored _sourceFilePath to create a sensible default name.
             string defaultPath = Path.ChangeExtension(_sourceFilePath, ".modified.ovf");
             string outputPath = ui.GetOutputFilePath(defaultPath);
 
             using (var writer = new OVFFileWriter()) {
+                // The library's SimpleJobWrite has a bug, so we write explicitly.
                 writer.StartWritePartial(_activeJob, outputPath);
                 foreach (var workPlane in _activeJob.WorkPlanes) {
                     writer.AppendWorkPlane(workPlane);

@@ -23,15 +23,40 @@ namespace OvfParameterModifier {
             Console.WriteLine("\n--- Main Menu ---");
             Console.WriteLine("1. View existing Parameter Sets");
             Console.WriteLine("2. Apply Parameters to a Layer Range");
-            Console.WriteLine("3. Save and Exit");
+            Console.WriteLine("3. Edit Individual Vector Blocks in a Layer");
+            Console.WriteLine("4. Save and Exit");
             Console.Write("Select an option: ");
 
-            // FIX: Handle potential null return from ReadLine.
             string input = Console.ReadLine() ?? "";
             if (int.TryParse(input, out int choice) && Enum.IsDefined(typeof(MainMenuOption), choice)) {
                 return (MainMenuOption)choice;
             }
             return MainMenuOption.Unknown;
+        }
+
+        public int GetTargetLayerIndex() {
+            return GetIntegerInput("\nEnter the Layer number you wish to edit: ");
+        }
+
+        public (float power, float speed)? GetVectorBlockParametersOrSkip(int planeNum, int blockNum, int totalBlocks, VectorBlock block) {
+            Console.WriteLine($"\nEditing Plane {planeNum}, Vector Block {blockNum}/{totalBlocks} (Type: {block.VectorDataCase}, Current Key: {block.MarkingParamsKey})");
+            Console.Write("  Enter new Laser Power (W) or press Enter to skip: ");
+            string powerInput = Console.ReadLine() ?? "";
+
+            if (string.IsNullOrWhiteSpace(powerInput)) {
+                Console.WriteLine("  -> Skipped.");
+                return null;
+            }
+
+            Console.Write("  Enter new Marking Speed (mm/s): ");
+            string speedInput = Console.ReadLine() ?? "";
+
+            if (float.TryParse(powerInput, out float power) && float.TryParse(speedInput, out float speed)) {
+                return (power, speed);
+            }
+
+            DisplayMessage("Invalid input. Skipping block.", isError: true);
+            return null;
         }
 
         public string GetSourceFilePath() {
