@@ -137,13 +137,19 @@ namespace OvfParameterModifier {
             Console.Write("  Enter new Marking Speed (mm/s): ");
             string speedInput = Console.ReadLine() ?? "";
 
-            if (float.TryParse(powerInput, out float power) && float.TryParse(speedInput, out float speed)) {
+            // CHANGE: The conditional logic is now more robust.
+            // It only succeeds if BOTH inputs are provided and BOTH are valid floats.
+            if (!string.IsNullOrWhiteSpace(speedInput) &&
+                float.TryParse(powerInput, out float power) &&
+                float.TryParse(speedInput, out float speed)) {
                 return (power, speed);
             }
 
-            DisplayMessage("Invalid input. Skipping block.", isError: true);
+            // If we reach here, it means either the speed was skipped or one of the inputs was invalid.
+            DisplayMessage("Invalid or incomplete input. Skipping block.", isError: true);
             return null;
         }
+
         public int GetIntegerInput(string prompt) {
             Console.Write(prompt);
             if (!int.TryParse(Console.ReadLine() ?? "", out int result)) {
