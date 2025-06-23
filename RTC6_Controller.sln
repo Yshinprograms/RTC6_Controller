@@ -28,6 +28,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OvfParameterModifier", "Ovf
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OvfParameterModifierTests", "OvfParameterModifierTests\OvfParameterModifierTests.csproj", "{528C1B32-22A6-40D9-8E6A-C879A0D6F98F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OvfViewer", "OvfViewer\OvfViewer.csproj", "{1750F635-B5BD-421B-BF5D-C071218EA2F5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F22E9DEC-2200-42C3-8672-434524CAA88B} = {F22E9DEC-2200-42C3-8672-434524CAA88B}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -122,6 +127,18 @@ Global
 		{528C1B32-22A6-40D9-8E6A-C879A0D6F98F}.Release|x64.Build.0 = Release|Any CPU
 		{528C1B32-22A6-40D9-8E6A-C879A0D6F98F}.Release|x86.ActiveCfg = Release|Any CPU
 		{528C1B32-22A6-40D9-8E6A-C879A0D6F98F}.Release|x86.Build.0 = Release|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Debug|x64.Build.0 = Debug|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Debug|x86.Build.0 = Debug|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Release|x64.ActiveCfg = Release|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Release|x64.Build.0 = Release|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Release|x86.ActiveCfg = Release|Any CPU
+		{1750F635-B5BD-421B-BF5D-C071218EA2F5}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

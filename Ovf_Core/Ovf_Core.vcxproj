@@ -141,11 +141,13 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="open_vector_format.pb.h" />
+    <ClInclude Include="ovf_file_reader.h" />
     <ClInclude Include="ovf_lut.pb.h" />
     <ClInclude Include="ProcessData.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="open_vector_format.pb.cc" />
+    <ClCompile Include="ovf_file_reader.cc" />
     <ClCompile Include="ovf_lut.pb.cc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
